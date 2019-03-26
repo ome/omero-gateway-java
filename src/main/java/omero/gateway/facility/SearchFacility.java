@@ -112,7 +112,7 @@ public class SearchFacility extends Facility {
                 // set general parameters
                 service.clearQueries();
                 service.setAllowLeadingWildcard(true);
-                service.setCaseSensitive(false);
+                service.setCaseSentivice(false);
                 String searchForClass = PojoMapper.convertTypeForSearch(type);
                 service.onlyType(searchForClass);
                 service.setBatchSize(batchSize);
