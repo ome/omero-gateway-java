@@ -6,4 +6,4 @@ pluginManagement {
     }
 }
 
-rootProject.name = 'omero-gateway'
+rootProject.name = 'omero-java-gateway'
