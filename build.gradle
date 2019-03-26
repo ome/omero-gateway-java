@@ -15,7 +15,7 @@ repositories {
 }
 
 dependencies {
-    implementation "org.openmicroscopy:omero-blitz:5.5.0-SNAPSHOT"
+    api "org.openmicroscopy:omero-blitz:5.5.0-SNAPSHOT"
     implementation "commons-beanutils:commons-beanutils:1.9.3"
     implementation "com.zeroc:icegrid:3.6.4"
     implementation "commons-lang:commons-lang:2.5"
