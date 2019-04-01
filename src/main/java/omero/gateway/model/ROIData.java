@@ -223,6 +223,7 @@ public class ROIData
      * expected if the ROI contains shapes which are associated 
      * with all planes (Z, C, T == -1)
      */
+    @Deprecated
     public int getPlaneCount() { return roiShapes.size(); }
 
     /**
@@ -284,6 +285,7 @@ public class ROIData
      * expected if the ROI contains shapes which are associated 
      * with all planes (Z, C, T == -1)
      */
+    @Deprecated
     public ROICoordinate firstPlane() {
         return roiShapes.firstKey();
     }
@@ -296,6 +298,7 @@ public class ROIData
      * expected if the ROI contains shapes which are associated 
      * with all planes (Z, C, T == -1)
      */
+    @Deprecated
     public ROICoordinate lastPlane() {
         return roiShapes.lastKey();
     }
@@ -312,6 +315,7 @@ public class ROIData
      * expected if the ROI contains shapes which are associated
      * with all planes (Z, C, T == -1)
      */
+    @Deprecated
     public Iterator<List<ShapeData>> getShapesInRange(ROICoordinate start,
             ROICoordinate end) {
         List<List<ShapeData>> res = new ArrayList<List<ShapeData>>();
