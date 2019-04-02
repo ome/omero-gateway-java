@@ -11,5 +11,5 @@ install:
   - DIR=$PWD; (cd /tmp; gradle wrapper --gradle-version=5.2.1; mv .gradle gradle gradlew $DIR)
 
 script:
-  - ./gradlew build
+  - ./gradlew publishToMavenLocal
   - ./gradlew test
