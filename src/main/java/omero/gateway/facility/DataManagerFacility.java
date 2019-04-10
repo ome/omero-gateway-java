@@ -819,7 +819,7 @@ public class DataManagerFacility extends Facility {
      * @param from
      *            The object to which the objects are attached now
      * @param to
-     *            The object to which the objects should be attached to
+     *            The object to which the objects should be attached
      * @throws DSOutOfServiceException
      * @throws DSAccessException
      */
@@ -827,7 +827,7 @@ public class DataManagerFacility extends Facility {
                      DataObject from, DataObject to)
             throws DSOutOfServiceException, DSAccessException {
         try {
-            if (!from.getClass().equals(to.getClass()))
+            if (!from.getClass() != to.getClass())
                 throw new IllegalArgumentException(
                         "Source and target object need to be the same type!");
 

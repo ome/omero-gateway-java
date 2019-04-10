@@ -6,6 +6,8 @@ import java.lang.reflect.Method;
 import omero.gateway.model.DataObject;
 import omero.model.IObject;
 
+import org.apache.commons.beanutils.PropertyUtils;
+
 /**
  * Some helper methods dealing with XXXYYYLinkI IObjects, e.g.
  * ImageAnnotationLinkI
@@ -42,12 +44,9 @@ public class Links {
     /**
      * Set the parent, child or both of an existing link
      *
-     * @param link
-     *            The link object
-     * @param parent
-     *            The parent (or <code>null</code>)
-     * @param child
-     *            The child (or <code>null</code>)
+     * @param link   The link object
+     * @param parent The parent (or <code>null</code>)
+     * @param child  The child (or <code>null</code>)
      * @return The link object
      * @throws ClassNotFoundException
      * @throws NoSuchMethodException
@@ -57,30 +56,17 @@ public class Links {
      * @throws InvocationTargetException
      */
     public static IObject setObjects(IObject link, DataObject parent,
-                                     DataObject child) throws ClassNotFoundException,
+                                     DataObject child) throws
             NoSuchMethodException, SecurityException, IllegalAccessException,
             IllegalArgumentException, InvocationTargetException {
         Class<? extends IObject> clazz = link.getClass();
         if (parent != null) {
-            for (Method m : clazz.getSuperclass().getMethods()) {
-                if (m.getName().equals("setParent")) {
-                    m.invoke(link,
-                            m.getParameterTypes()[0].cast(parent.asIObject()));
-                    break;
-                }
-            }
+            PropertyUtils.setProperty(link, "parent", parent.asIObject());
         }
         if (child != null) {
-            for (Method m : clazz.getSuperclass().getMethods()) {
-                if (m.getName().equals("setChild")) {
-                    m.invoke(link,
-                            m.getParameterTypes()[0].cast(child.asIObject()));
-                    break;
-                }
-            }
+            PropertyUtils.setProperty(link, "child", child.asIObject());
+            return link;
         }
-        return link;
-    }
 
     /**
      * Get the IObject type of DataObject class with respect to links
