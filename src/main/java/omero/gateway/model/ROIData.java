@@ -244,6 +244,17 @@ public class ROIData
     }
 
     /**
+     * Returns a list of all shapes.
+     *
+     * @return See above.
+     */
+    public List<ShapeData> getShapes() {
+        List<ShapeData> res = new ArrayList<ShapeData>();
+        roiShapes.values().stream().forEach(list -> res.addAll(list));
+        return res;
+    }
+
+    /**
      * Returns the list of shapes on a given plane.
      *
      * @param z The z-section.
