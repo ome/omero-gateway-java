@@ -245,6 +245,9 @@ public class PixelsData extends DataObject {
     /**
      * Returns the dimension of a pixel along the X-axis.
      *
+     * Note: Do not use the returned Length object to modify the
+     *       pixel size, use the setPixelSizeX method instead.
+     *
      * @param unit
      *            The unit (may be null, in which case no conversion will be
      *            performed)
@@ -272,6 +275,9 @@ public class PixelsData extends DataObject {
     /**
      * Returns the dimension of a pixel along the Y-axis.
      *
+     * Note: Do not use the returned Length object to modify the
+     *       pixel size, use the setPixelSizeY method instead.
+     *
      * @param unit
      *            The unit (may be null, in which case no conversion will be
      *            performed)
@@ -298,6 +304,9 @@ public class PixelsData extends DataObject {
 
     /**
      * Returns the dimension of a pixel along the Z-axis
+     *
+     * Note: Do not use the returned Length object to modify the
+     *       pixel size, use the setPixelSizeZ method instead.
      *
      * @param unit
      *            The unit (may be null, in which case no conversion will be
