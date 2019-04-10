@@ -255,28 +255,36 @@ public class ROIData
     }
 
     /**
-     * Returns the list of shapes on a given plane.
+     * Returns a list of shapes on a given plane.
      *
-     * @param z The z-section.
-     * @param t The timepoint.
+     * @param z
+     *            The z-section.
+     * @param t
+     *            The timepoint.
      * @return See above.
      */
-    public List<ShapeData> getShapes(int z, int t)
-    {
+    public List<ShapeData> getShapes(int z, int t) {
         List<ShapeData> res = roiShapes.get(new ROICoordinate(z, t));
         if (res == null)
             res = new ArrayList<ShapeData>();
-        List<ShapeData> allZT = roiShapes.get(new ROICoordinate(-1, -1));
-        if (allZT != null)
-            res.addAll(allZT);
-        List<ShapeData> allZ = roiShapes.get(new ROICoordinate(-1, t));
-        if (allZ != null)
-            res.addAll(allZ);
-        List<ShapeData> allT = roiShapes.get(new ROICoordinate(z, -1));
-        if (allT != null)
-            res.addAll(allT);
+        if (z != -1 || t != -1) {
+            List<ShapeData> allZT = roiShapes.get(new ROICoordinate(-1, -1));
+            if (allZT != null)
+                res.addAll(allZT);
+        }
+        if (z != -1) {
+            List<ShapeData> allZ = roiShapes.get(new ROICoordinate(-1, t));
+            if (allZ != null)
+                res.addAll(allZ);
+        }
+        if (t != -1) {
+            List<ShapeData> allT = roiShapes.get(new ROICoordinate(z, -1));
+            if (allT != null)
+                res.addAll(allT);
+        }
         return res;
     }
+
 
     /**
      * Returns the iterator of the collection of the map.
