@@ -807,5 +807,56 @@ public class DataManagerFacility extends Facility {
         }
         return null;
     }
+
+    /**
+     * Moves DataObjects from one object to another, i.e. Annotations from one
+     * Image to another, or Images from one Dataset to another.
+     *
+     * @param ctx
+     *            The SecurityContext
+     * @param objects
+     *            The objects to move
+     * @param from
+     *            The object to which the objects are attached now
+     * @param to
+     *            The object to which the objects should be attached to
+     * @throws DSOutOfServiceException
+     * @throws DSAccessException
+     */
+    public void move(SecurityContext ctx, List<? extends DataObject> objects,
+                     DataObject from, DataObject to)
+            throws DSOutOfServiceException, DSAccessException {
+        try {
+            if (!from.getClass().equals(to.getClass()))
+                throw new IllegalArgumentException(
+                        "Source and target object need to be the same type!");
+
+            if (objects.isEmpty())
+                return;
+
+            Class<? extends IObject> type = Links.getLinkClass(from.getClass(),
+                    objects.get(0).getClass());
+            if (type == null)
+                throw new IllegalArgumentException(
+                        "Can't determine the link type for this class");
+
+            String query = "select link from "
+                    + PojoMapper.getHQLEntityName(type)
+                    + " link join fetch link.child as c join fetch link.parent as p where c.id in (:ids) and p.id = :parentId";
+            ParametersI params = new ParametersI();
+            Collection<Long> ids = objects.stream().map(obj -> obj.getId())
+                    .collect(Collectors.toList());
+            params.addIds(ids);
+            params.add("parentId", omero.rtypes.rlong(from.getId()));
+
+            List<IObject> links = gateway.getQueryService(ctx)
+                    .findAllByQuery(query, params);
+            for (IObject link : links)
+                Links.setObjects(link, to, null);
+            updateObjects(ctx, links, null);
+        } catch (Throwable t) {
+            handleException(this, t, "Cannot move the annotation.");
+        }
+    }
     
 }
