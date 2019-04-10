@@ -1135,8 +1135,7 @@ public class Gateway implements AutoCloseable {
             ServiceFactoryPrx entryEncrypted = client.getSession();
             
             // version check
-            ResourceBundle bundle = ResourceBundle.getBundle("omero");
-            String clientVersion = bundle.getString("omero.version");
+            String clientVersion = Gateway.class.getPackage().getImplementationVersion();
             IConfigPrx conf = entryEncrypted.getConfigService();
             String serverVersion = conf.getVersion();
             if (StringUtils.isNotEmpty(clientVersion)
