@@ -36,9 +36,11 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
+import omero.gateway.util.Links;
+import omero.sys.ParametersI;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
 
 import omero.ServerError;
 import omero.api.IContainerPrx;
@@ -827,7 +829,7 @@ public class DataManagerFacility extends Facility {
                      DataObject from, DataObject to)
             throws DSOutOfServiceException, DSAccessException {
         try {
-            if (!from.getClass() != to.getClass())
+            if (from.getClass() != to.getClass())
                 throw new IllegalArgumentException(
                         "Source and target object need to be the same type!");
 

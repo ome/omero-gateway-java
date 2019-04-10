@@ -13,8 +13,7 @@ import org.apache.commons.beanutils.PropertyUtils;
  * ImageAnnotationLinkI
  *
  * @author Dominik Lindner &nbsp;&nbsp;&nbsp;&nbsp;
- *         <a href="mailto:d.lindner@dundee.ac.uk">d.lindner@dundee.ac.uk</a>
- *
+ * <a href="mailto:d.lindner@dundee.ac.uk">d.lindner@dundee.ac.uk</a>
  */
 public class Links {
 
@@ -25,10 +24,8 @@ public class Links {
      * Get the Link class for a certain child parent combination, e.g. parent:
      * DatasetData, child: ImageData => omero.model.DatasetImageLinkI
      *
-     * @param parent
-     *            The parent
-     * @param child
-     *            The child
+     * @param parent The parent
+     * @param child  The child
      * @return See above
      * @throws ClassNotFoundException
      */
@@ -65,14 +62,14 @@ public class Links {
         }
         if (child != null) {
             PropertyUtils.setProperty(link, "child", child.asIObject());
-            return link;
         }
+        return link;
+    }
 
     /**
      * Get the IObject type of DataObject class with respect to links
      *
-     * @param clazz
-     *            The DataObject class
+     * @param clazz The DataObject class
      * @return See above
      */
     private static String getType(Class<? extends DataObject> clazz) {
