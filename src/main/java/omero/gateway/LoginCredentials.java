@@ -60,6 +60,9 @@ public class LoginCredentials {
     /** The connection argument.*/
     private ImmutableList<String> args;
 
+    /** Whether to check the client-server versions */
+    private boolean checkVersion = true;
+
     /**
      * Creates a new instance
      */
@@ -229,6 +232,23 @@ public class LoginCredentials {
      */
     public void setGroupID(long groupID) {
         this.groupID = groupID;
+    }
+
+    /**
+     * Returns whether the version check is enabled
+     * @return whether the version check is enabled
+     */
+    public boolean getCheckVersion() {
+        return this.checkVersion;
+    }
+
+    /**
+     * Enable/Disable version check
+     *
+     * @param checkVersion Whether to check the client and server versions are compatible
+     */
+    public void setCheckVersion(boolean checkVersion) {
+        this.checkVersion = checkVersion;
     }
 
 }
