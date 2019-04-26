@@ -65,8 +65,8 @@ import omero.gateway.util.Pojos;
  * A {@link Facility} for browsing the data hierarchy and retrieving
  * {@link ProjectData}, {@link DatasetData}, etc.
  *
- * @author Dominik Lindner &nbsp;&nbsp;&nbsp;&nbsp; <a
- *         href="mailto:d.lindner@dundee.ac.uk">d.lindner@dundee.ac.uk</a>
+ * @author Dominik Lindner &nbsp;&nbsp;&nbsp;&nbsp;
+ * <a href="mailto:d.lindner@dundee.ac.uk">d.lindner@dundee.ac.uk</a>
  * @since 5.1
  */
 
@@ -463,8 +463,8 @@ public class BrowseFacility extends Facility {
      *
      * @param ctx
      *            The {@link SecurityContext}
-     * @param ownerId The id of the user (if <code><0</code> see
-     *            {@link #getProjects(SecurityContext)} )
+     * @param ownerId The id of the user (if {@code 0} see
+     *            {@link #getProjects(SecurityContext)})
      * @return A collection of {@link ProjectData}s
      * @throws DSOutOfServiceException
      *             If the connection is broken, or not logged in
@@ -502,8 +502,8 @@ public class BrowseFacility extends Facility {
      *
      * @param ctx
      *            The {@link SecurityContext}
-     * @param ownerId The id of the user (if <code><0</code> see
-     *            {@link #getProjects(SecurityContext, Collection)} )
+     * @param ownerId The id of the user (if {@code 0} see
+     *            {@link #getProjects(SecurityContext, Collection)})
      * @param ids
      *            The ids of the projects to fetch
      * @return A collection of {@link ProjectData}s
@@ -590,8 +590,8 @@ public class BrowseFacility extends Facility {
      * @param ctx
      *            The {@link SecurityContext}
      * @param ownerId
-     *            The id of the user (if <code><0</code> see
-     *            {@link #getDatasets(SecurityContext)} )
+     *            The id of the user (if {@code 0} see
+     *            {@link #getDatasets(SecurityContext)})
      * @return A collection of {@link DatasetData}s
      * @throws DSOutOfServiceException
      *             If the connection is broken, or not logged in
@@ -629,8 +629,8 @@ public class BrowseFacility extends Facility {
      *
      * @param ctx
      *            The {@link SecurityContext}
-     * @param ownerId The id of the user (if <code><0</code> see
-     *            {@link #getDatasets(SecurityContext, Collection)} )
+     * @param ownerId The id of the user (if {@code 0} see
+     *            {@link #getDatasets(SecurityContext, Collection)})
      * @param ids
      *            The ids of the datasets to load
      * @return A collection of {@link DatasetData}s
@@ -715,8 +715,8 @@ public class BrowseFacility extends Facility {
      *
      * @param ctx
      *            The {@link SecurityContext}
-     * @param ownerId The id of the user (if <code><0</code> see
-     *            {@link #getScreens(SecurityContext)} )
+     * @param ownerId The id of the user (if {@code 0} see
+     *            {@link #getScreens(SecurityContext)})
      * @return A collection of {@link ScreenData}s
      * @throws DSOutOfServiceException
      *             If the connection is broken, or not logged in
@@ -754,8 +754,8 @@ public class BrowseFacility extends Facility {
      *
      * @param ctx
      *            The {@link SecurityContext}
-     * @param ownerId The id of the user (if <code><0</code> see
-     *            {@link #getScreens(SecurityContext, Collection)} )
+     * @param ownerId The id of the user (if {@code 0} see
+     *            {@link #getScreens(SecurityContext, Collection)})
      * @param ids
      *            The ids of the screens to load
      * @return A collection of {@link ScreenData}s
@@ -841,8 +841,8 @@ public class BrowseFacility extends Facility {
      *
      * @param ctx
      *            The {@link SecurityContext}
-     * @param ownerId The id of the user (if <code><0</code> see
-     *            {@link #getPlates(SecurityContext)} )
+     * @param ownerId The id of the user (if {@code 0} see
+     *            {@link #getPlates(SecurityContext)})
      * @return A collection of {@link PlateData}s
      * @throws DSOutOfServiceException
      *             If the connection is broken, or not logged in
@@ -880,8 +880,8 @@ public class BrowseFacility extends Facility {
      *
      * @param ctx
      *            The {@link SecurityContext}
-     * @param ownerId The id of the user (if <code><0</code> see
-     *            {@link #getPlates(SecurityContext, Collection)} )
+     * @param ownerId The id of the user (if {@code 0} see
+     *            {@link #getPlates(SecurityContext, Collection)})
      * @param ids
      *            The ids of the plates to load
      * @return A collection of {@link PlateData}s

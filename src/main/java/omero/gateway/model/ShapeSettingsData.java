@@ -228,7 +228,7 @@ public class ShapeSettingsData
     }
 
     /**
-     * Returns the stroke's width (or 1 px if it's not set or <= 0)
+     * Returns the stroke's width (or 1 px if it's not set or less than or equals to 0)
      *
      * @param unit
      *            The unit (may be null, in which case no conversion will be

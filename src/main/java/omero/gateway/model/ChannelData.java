@@ -109,7 +109,7 @@ public class ChannelData
 
     /**
      * Returns the label of the channel.
-     * Following the specification: Name>Fluor>Emission wavelength>index.
+     * Following the specification: Name&rarr;Fluor&rarr;Emission wavelength&rarr;index.
      *
      * @return See above.
      */
