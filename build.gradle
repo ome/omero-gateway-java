@@ -17,6 +17,9 @@ repositories {
 
 dependencies {
     api("org.openmicroscopy:omero-blitz:5.5.0-m7")
+    api("ome:formats-api:5.9.2") {
+        exclude group: "org.perf4j", module: "perf4j"
+    }
     implementation("commons-beanutils:commons-beanutils:1.9.3")
     implementation("com.zeroc:icegrid:3.6.4")
     testCompile("org.testng:testng:6.9.8")
