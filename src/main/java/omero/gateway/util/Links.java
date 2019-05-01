@@ -45,17 +45,10 @@ public class Links {
      * @param parent The parent (or <code>null</code>)
      * @param child  The child (or <code>null</code>)
      * @return The link object
-     * @throws ClassNotFoundException
-     * @throws NoSuchMethodException
-     * @throws SecurityException
-     * @throws IllegalAccessException
-     * @throws IllegalArgumentException
-     * @throws InvocationTargetException
+     * @throws ReflectiveOperationException
      */
     public static IObject setObjects(IObject link, DataObject parent,
-                                     DataObject child) throws
-            NoSuchMethodException, SecurityException, IllegalAccessException,
-            IllegalArgumentException, InvocationTargetException {
+                                     DataObject child) throws ReflectiveOperationException {
         Class<? extends IObject> clazz = link.getClass();
         if (parent != null) {
             PropertyUtils.setProperty(link, "parent", parent.asIObject());
