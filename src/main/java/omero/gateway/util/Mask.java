@@ -206,7 +206,7 @@ public class Mask {
     /**
      * Transforms a 2 dimensional array into a one dimensional
      * array; the opposite of the fold method.
-     * E. g.
+     * E.g.
      * <pre>
      * int[][] y =
      * [0 1 2 3]
