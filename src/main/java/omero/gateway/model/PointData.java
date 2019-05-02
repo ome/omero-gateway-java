@@ -163,12 +163,4 @@ extends ShapeData
         shape.setY(rtypes.rdouble(y));
         setDirty(true);
     }
-
-    @Override
-    public String toString() {
-        if (getText().length()>0)
-            return getText();
-        else
-            return super.toString();
-    }
 }

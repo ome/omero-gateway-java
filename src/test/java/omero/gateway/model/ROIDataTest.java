@@ -39,26 +39,22 @@ public class ROIDataTest {
         PointData p = new PointData(1,1);
         p.setText("all z t");
         rd.addShapeData(p);
-        System.out.println(p.getROICoordinate());
 
         p = new PointData(1,1);
         p.setZ(5);
         p.setText("all t z=5");
         rd.addShapeData(p);
-        System.out.println(p.getROICoordinate());
 
         p = new PointData(1,1);
         p.setT(5);
         p.setText("all z t=5");
         rd.addShapeData(p);
-        System.out.println(p.getROICoordinate());
 
         p = new PointData(1,1);
         p.setZ(3);
         p.setT(3);
         p.setText("z=3 t=3");
         rd.addShapeData(p);
-        System.out.println(p.getROICoordinate());
 
         Assert.assertEquals(rd.getShapeCount(), 4);
 
@@ -74,7 +70,7 @@ public class ROIDataTest {
         shapes = rd.getShapes(1, 1, true);
         Assert.assertEquals(shapes.size(), 0);
 
-        // 1/1 includes the allZT
+        // 1/1 doesn't have shape, but includes the allZT
         shapes = rd.getShapes(1, 1);
         Assert.assertEquals(shapes.size(), 1);
 
