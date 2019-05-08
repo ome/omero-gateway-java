@@ -17,9 +17,7 @@ repositories {
 
 dependencies {
     api("org.openmicroscopy:omero-blitz:5.5.0-m7")
-    api("ome:formats-api:5.9.2") {
-        exclude group: "org.perf4j", module: "perf4j"
-    }
+
     implementation("commons-beanutils:commons-beanutils:1.9.3")
     implementation("com.zeroc:icegrid:3.6.4")
     testCompile("org.testng:testng:6.9.8")
@@ -27,19 +25,17 @@ dependencies {
     //implementation("org.apache.commons:commons-collections4:4.1")
     implementation("commons-collections:commons-collections:3.2.2")
     implementation("commons-lang:commons-lang:2.6")
+
 }
 
 configurations.all {
     // resolutionStrategy.cacheChangingModulesFor 0, 'minutes'
-    exclude group: 'OME'
     exclude group: 'antlr'
     exclude group: 'asm'
     exclude group: 'backport-util-concurrent'
     exclude group: 'batik'
     exclude group: 'cglib'
     exclude group: 'com.codahale.metrics'
-    exclude group: 'com.drewnoakes'
-    exclude group: 'com.esotericsoftware.kryo'
     exclude group: 'com.jamonapi'
     exclude group: 'com.github.marcus-nl.btm'
     exclude group: 'com.mortennobel'
@@ -47,34 +43,23 @@ configurations.all {
     exclude group: 'commons-codec'
     exclude group: 'commons-pool'
     exclude group: 'dom4j'
-    exclude group: 'edu.ucar'
     exclude group: 'freemarker'
     exclude group: 'geronimo-spec'
     exclude group: 'gnu.getopt'
     exclude group: 'org.javassist'
     exclude group: 'javax.jts'
-    exclude group: 'joda-time'
     exclude group: 'net.sf.ehcache'
-    exclude group: 'ome', module: 'formats-gpl'
-    exclude group: 'ome', module: 'jai_imageio'
-    exclude group: 'ome', module: 'lwf-stubs'
-    exclude group: 'ome', module: 'turbojpeg'
     exclude group: 'org.apache.lucene'
     exclude group: 'org.apache.httpcomponents'
     exclude group: 'org.codehaus.btm'
     exclude group: 'org.hibernate'
     exclude group: 'org.hibernate.javax.persistence'
-    exclude group: 'org.ini4j'
     exclude group: "org.postgresql"
-    exclude group: 'org.scijava'
     exclude group: "org.springframework"
     exclude group: "org.springframework.security"
     exclude group: 'org.subethamail'
     exclude group: 'org.apache.pdfbox'
     exclude group: 'org.quartz-scheduler'
-    exclude group: 'xerces'
-    exclude group: 'xalan'
-    exclude group: 'xml-apis'
     exclude group: 'org.apache.xmlgraphics'
     exclude group: 'com.zeroc', module: 'ice-db'
 }
