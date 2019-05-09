@@ -2,10 +2,7 @@
 plugins {
     id 'java-library'
     id "org.openmicroscopy.project" version "5.5.0-m5"
-    id "application"
 }
-
-mainClassName = "omero.gateway.Gateway"
 
 group = "org.openmicroscopy"
 version = "5.5.0-SNAPSHOT"
