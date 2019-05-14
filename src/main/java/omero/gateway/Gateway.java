@@ -1139,7 +1139,8 @@ public class Gateway implements AutoCloseable {
             IConfigPrx conf = entryEncrypted.getConfigService();
             String serverVersion = conf.getVersion();
             if (StringUtils.isNotEmpty(clientVersion)
-                    && StringUtils.isNotEmpty(serverVersion)) {
+                    && StringUtils.isNotEmpty(serverVersion)
+                    && cred.getCheckVersion()) {
                 String[] vc = clientVersion.split("\\.");
                 String[] vs = serverVersion.split("\\.");
                 if (!vc[0].equals(vs[0]) || !vc[1].equals(vs[1]))
