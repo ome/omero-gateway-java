@@ -677,4 +677,20 @@ public class PojoMapper
             return PlateAcquisitionI.class.getName();
         throw new IllegalArgumentException("type not supported");
     }
+
+    /**
+     * Gets the type of an IObject class as String which can be used in HQL
+     * queries.
+     *
+     * @param clazz
+     *            The IObject
+     * @return See above
+     */
+    public static String getHQLEntityName(Class<? extends IObject> clazz) {
+        String name = clazz.getSimpleName();
+        if (name.endsWith("I"))
+            return name.substring(0, name.length() - 1);
+        else
+            return name;
+    }
 }

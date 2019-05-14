@@ -32,47 +32,44 @@ import omero.gateway.model.MaskData;
  */
 public class Mask {
 
-    private Mask() {}
-    
+    private Mask() {
+    }
+
     /**
      * Creates a mask ROI; automatically crop to its bounding box.
      * (sets X, Y, width and height accordingly)
-     * 
-     * @param mask
-     *            The binary mask (int[width][height]) covering the whole
-     *            image
+     *
+     * @param mask The binary mask (int[width][height]) covering the whole
+     *             image
      * @return The mask ROI
      */
     public static MaskData createCroppedMask(int[][] mask) {
         return createCroppedMask(intToBoolean(mask));
     }
 
-    
+
     /**
      * Creates a mask ROI; automatically crop to its bounding box.
      * (sets X, Y, width and height accordingly)
-     * 
-     * @param mask
-     *            The binary mask (boolean[width][height]) covering the whole
-     *            image
+     *
+     * @param mask The binary mask (boolean[width][height]) covering the whole
+     *             image
      * @return The mask ROI
      */
     public static MaskData createCroppedMask(boolean[][] mask) {
-        
+
         int minx = Integer.MAX_VALUE, miny = Integer.MAX_VALUE;
         int maxx = 0, maxy = 0;
-        
+
         int width = mask.length;
         int height = mask[0].length;
-        
-        for (int y = height-1 ; y >= 0 ; y--)
-        {
-            for (int x = 0 ; x < width ; x++)
-            {
+
+        for (int y = height - 1; y >= 0; y--) {
+            for (int x = 0; x < width; x++) {
                 if (mask[x][y]) {
-                    if ( x < minx )
+                    if (x < minx)
                         minx = x;
-                    if ( x > maxx)
+                    if (x > maxx)
                         maxx = x;
                     if (y < miny)
                         miny = y;
@@ -81,21 +78,19 @@ public class Mask {
                 }
             }
         }
-        
+
         if (maxx == 0)
             return null;
-        
+
         int neww = maxx - minx + 1;
         int newh = maxy - miny + 1;
         boolean[][] newmask = new boolean[neww][newh];
-        for (int y = 0 ; y < newh ; y++)
-        {
-            for (int x = 0 ; x < neww ; x++)
-            {
-                newmask[x][y] = mask[x+minx][y+miny];
+        for (int y = 0; y < newh; y++) {
+            for (int x = 0; x < neww; x++) {
+                newmask[x][y] = mask[x + minx][maxy - y];
             }
         }
-        
+
         MaskData result = new MaskData();
         result.setMask(newmask);
         result.setX(minx);
@@ -104,13 +99,13 @@ public class Mask {
         result.setWidth(neww);
         return result;
     }
-    
+
     /**
-     * Creates mask ROIs from the given integer array where each 
+     * Creates mask ROIs from the given integer array where each
      * single mask ROI is specified by a specific integer.
-     * 
+     *
      * @param masks The masks (int[width][height]) covering the whole
-     *            image.
+     *              image.
      * @return The mask ROIs
      */
     public static List<MaskData> createCroppedMasks(int[][] masks) {
@@ -118,7 +113,7 @@ public class Mask {
         for (int i = 0; i < copy.length; i++)
             for (int j = 0; j < copy[0].length; j++)
                 copy[i][j] = masks[i][j];
-        
+
         List<MaskData> res = new ArrayList<MaskData>();
         int target = 0;
         while ((target = getFirstNonZeroInt(copy)) > 0) {
@@ -137,11 +132,23 @@ public class Mask {
     }
 
     /**
+     * Creates mask ROIs from the given integer array where each
+     * single mask ROI is specified by a specific integer.
+     *
+     * @param masks The masks covering the whole image.
+     * @param width The width of the image
+     * @return The mask ROIs
+     */
+    public static List<MaskData> createCroppedMasks(int[] masks, int width) {
+        int[][] folded = fold(masks, width);
+        return createCroppedMasks(folded);
+    }
+
+    /**
      * Simply iterates over the array and returns the first non zero integer
      * found.
-     * 
-     * @param array
-     *            The integer array
+     *
+     * @param array The integer array
      * @return The first non zero integer found; zero if there is non.
      */
     private static int getFirstNonZeroInt(int[][] array) {
@@ -157,15 +164,72 @@ public class Mask {
     /**
      * Transforms an integer array to a boolean array,
      * where 0 == false and !0 == true
+     *
      * @param array The integer array
      * @return The boolean array
      */
     private static boolean[][] intToBoolean(int[][] array) {
         boolean[][] result = new boolean[array.length][array[0].length];
-        for (int i=0; i<array.length; i++)
-            for (int j=0; j<array[0].length; j++)
+        for (int i = 0; i < array.length; i++)
+            for (int j = 0; j < array[0].length; j++)
                 result[i][j] = array[i][j] != 0;
         return result;
     }
-    
+
+    /**
+     * Breaks a one-dimensional array into 'length' chunks,
+     * forming a two-dimensional array, e.g.
+     * <pre>
+     * int[] x = 0 1 2 3 4 5 6 7 8 9
+     *
+     * using length = 4 will be transformed to
+     *
+     * int[][] y =
+     * [0 1 2 3]
+     * [4 5 6 7]
+     * [8 9 0 0]
+     * </pre>
+     * @param array An int array
+     * @param length The length of the chunks
+     * @return Two dimensional array
+     */
+    public static int[][] fold(int[] array, int length) {
+        int height = array.length / length;
+        if (array.length % length != 0)
+            height++;
+        int[][] result = new int[height][length];
+        for (int i = 0; i < array.length; i++)
+            result[i / length][i % length] = array[i];
+        return result;
+    }
+
+    /**
+     * Transforms a 2 dimensional array into a one dimensional
+     * array; the opposite of the fold method.
+     * E.g.
+     * <pre>
+     * int[][] y =
+     * [0 1 2 3]
+     * [4 5 6 7]
+     * [8 9 0 0]
+     *
+     * would transformed into
+     *
+     * int[] x = 0 1 2 3 4 5 6 7 8 9 0 0
+     * </pre>
+     * @param array An int array
+     * @return The one dimensional array
+     */
+    public static int[] unfold(int[][] array) {
+
+        int w = array.length;
+        int h = array[0].length;
+
+        int[] result = new int[w * h];
+
+        for (int i = 0; i < w; i++)
+            for (int j = 0; j < h; j++)
+                result[i * h + j] = array[i][j];
+        return result;
+    }
 }

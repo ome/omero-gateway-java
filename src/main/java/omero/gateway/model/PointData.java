@@ -158,10 +158,9 @@ extends ShapeData
         if (isReadOnly())
             throw new IllegalArgumentException("Shape ReadOnly");
         Point shape = (Point) asIObject();
-        if (shape == null) 
+        if (shape == null)
             throw new IllegalArgumentException("No shape specified.");
         shape.setY(rtypes.rdouble(y));
         setDirty(true);
     }
-
 }

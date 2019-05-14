@@ -1,6 +1,6 @@
 /*
  *------------------------------------------------------------------------------
- * Copyright (C) 2006-2018 University of Dundee. All rights reserved.
+ * Copyright (C) 2006-2019 University of Dundee. All rights reserved.
  *
  *
  * This program is free software; you can redistribute it and/or modify
@@ -244,26 +244,84 @@ public class ROIData
     }
 
     /**
-     * Returns the list of shapes on a given plane.
+     * Returns a list of all shapes.
      *
-     * @param z The z-section.
-     * @param t The timepoint.
      * @return See above.
      */
-    public List<ShapeData> getShapes(int z, int t)
-    {
-        List<ShapeData> res = roiShapes.get(new ROICoordinate(z, t));
+    public List<ShapeData> getShapes() {
+        List<ShapeData> res = new ArrayList<ShapeData>();
+        roiShapes.values().stream().forEach(list -> res.addAll(list));
+        return res;
+    }
+
+    /**
+     * Returns a list of shapes on a given plane, including
+     * shapes which are not specifically attached to the plane
+     * (span over all z planes and/or timepoints).
+     *
+     * @param z The z-section (-1 to get only shapes which are
+     *          available to all z planes).
+     * @param t The timepoint (-1 to get only shapes which are
+     *          available to all timepoints).
+     * @return See above.
+     */
+    public List<ShapeData> getShapes(int z, int t) {
+        return getShapes(z, t, false);
+    }
+
+    /**
+     * Returns a list of shapes on a given plane.
+     *
+     * @param z
+     *            The z-section (-1 to get only shapes which are
+     *            available to all z planes).
+     * @param t
+     *            The timepoint (-1 to get only shapes which are
+     *            available to all timepoints).
+     * @param excludeUnspecific Pass true to only get shapes which
+     *                          are specifically bound to the given z/t
+     *                          plane, excluding shapes which are available
+     *                          to all z planes and/or timepoints.
+     * @return See above.
+     */
+    public List<ShapeData> getShapes(int z, int t, boolean excludeUnspecific) {
+        List<ShapeData> res = getRoiShapes(z, t);
         if (res == null)
             res = new ArrayList<ShapeData>();
-        List<ShapeData> allZT = roiShapes.get(new ROICoordinate(-1, -1));
-        if (allZT != null)
-            res.addAll(allZT);
-        List<ShapeData> allZ = roiShapes.get(new ROICoordinate(-1, t));
-        if (allZ != null)
-            res.addAll(allZ);
-        List<ShapeData> allT = roiShapes.get(new ROICoordinate(z, -1));
-        if (allT != null)
-            res.addAll(allT);
+        if (!excludeUnspecific) {
+            if (z != -1 || t != -1) {
+                List<ShapeData> allZT = getRoiShapes(-1, -1);
+                if (allZT != null)
+                    res.addAll(allZT);
+            }
+            if (z != -1 && t != -1) {
+                List<ShapeData> allZ = getRoiShapes(-1, t);
+                if (allZ != null)
+                    res.addAll(allZ);
+                List<ShapeData> allT = getRoiShapes(z, -1);
+                if (allT != null)
+                    res.addAll(allT);
+            }
+        }
+        return res;
+    }
+
+    /**
+     * Get the ROI shapes of a specific coordinate as
+     * new list.
+     * The purpose of this method is mostly to avoid
+     * accidental modification of the lists within the
+     * roiShapes map.
+     *
+     * @param z The z plane
+     * @param t The timepoint
+     * @return A new list containing the shapes
+     */
+    private List<ShapeData> getRoiShapes(int z, int t) {
+        ArrayList<ShapeData> res = new ArrayList<ShapeData>();
+        List<ShapeData> shapes = roiShapes.get(new ROICoordinate(z, t));
+        if (shapes != null)
+            res.addAll(shapes);
         return res;
     }
 
