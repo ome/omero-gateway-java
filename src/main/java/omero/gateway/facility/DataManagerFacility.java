@@ -597,6 +597,9 @@ public class DataManagerFacility extends Facility {
             return null;
         
         if (project != null) {
+            if (project.getId() >= 0)
+                // reload to be sure we have the latest version
+                project = browse.findObject(ctx, ProjectData.class, project.getId());
             ProjectDatasetLink link = new ProjectDatasetLinkI();
             link = new ProjectDatasetLinkI();
             link.setChild(dataset.asDataset());
@@ -860,5 +863,4 @@ public class DataManagerFacility extends Facility {
             handleException(this, t, "Cannot move the annotation.");
         }
     }
-    
 }
