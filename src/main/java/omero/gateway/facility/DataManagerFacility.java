@@ -860,7 +860,7 @@ public class DataManagerFacility extends Facility {
                 Links.setObjects(link, to, null);
             updateObjects(ctx, links, null);
         } catch (Throwable t) {
-            handleException(this, t, "Cannot move the annotation.");
+            handleException(this, t, "Cannot move the object.");
         }
     }
 }
