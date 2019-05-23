@@ -1,11 +1,11 @@
 
 plugins {
     id 'java-library'
-    id "org.openmicroscopy.project" version "5.5.0-m5"
+    id "org.openmicroscopy.project" version "5.5.1"
 }
 
 group = "org.openmicroscopy"
-version = "5.5.0-SNAPSHOT"
+version = "5.5.0"
 
 repositories {
     mavenLocal()
@@ -13,7 +13,7 @@ repositories {
 }
 
 dependencies {
-    api("org.openmicroscopy:omero-blitz:5.5.0-m9")
+    api("org.openmicroscopy:omero-blitz:5.5.0")
 
     implementation("commons-beanutils:commons-beanutils:1.9.3")
     implementation("com.zeroc:icegrid:3.6.4")
