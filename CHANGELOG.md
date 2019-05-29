@@ -1,3 +1,9 @@
+5.5.1 (May 2019)
+----------------
+
+- Replace usage of deprecated misspelled method.
+- Update omero-blitz dependency version.
+
 5.5.0 (May 2019)
 ----------------
 
