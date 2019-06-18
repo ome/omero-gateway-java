@@ -678,10 +678,23 @@ class Connector
 
     /**
      * Closes the session.
+     *
+     * @deprecated Please use {@link #close(boolean, boolean)}
+     *
+     * @param networkup Pass <code>true</code> if the network is up,
+     * <code>false</code> otherwise.
+     */
+    void close(boolean networkup) {
+       this.close(networkup, true);
+    }
+
+    /**
+     * Closes the session.
      * 
      * @param networkup Pass <code>true</code> if the network is up,
      * <code>false</code> otherwise.
-     * @param closeSession Pass <code>true</code> to close the session
+     * @param closeSession Pass <code>true</code> to close the session,
+     *                     <code>false</code> to only detach from the session.
      */
      void close(boolean networkup, boolean closeSession)
     {
@@ -720,9 +733,21 @@ class Connector
 
     /**
      * Closes the services initialized by the importer.
+     *
+     * @deprecated Please use {@link #closeImport(boolean)}
      */
-     //TODO: along with the TODO on derived, this will need to be reviewed
-     //for race conditions.
+    //TODO: along with the TODO on derived, this will need to be reviewed
+    //for race conditions.
+    void closeImport()
+    {
+        this.closeImport(true);
+    }
+
+    /**
+     * Closes the services initialized by the importer.
+     * @param closeSession Pass <code>true</code> to close the session,
+     *                     <code>false</code> to only detach from the session.
+     */
      void closeImport(boolean closeSession)
     {
         shutdownImports();
@@ -735,10 +760,23 @@ class Connector
 
     /**
      * Closes the connectors associated to the master connector.
+     *
+     * @deprecated Please use {@link #closeDerived(boolean, boolean)}
+     *
+     * @param networkup Pass <code>true</code> if the network is up,
+     * <code>false</code> otherwise.
+     */
+    void closeDerived(boolean networkup) {
+        this.closeDerived(networkup, true);
+    }
+
+    /**
+     * Closes the connectors associated to the master connector.
      * 
      * @param networkup Pass <code>true</code> if the network is up,
      * <code>false</code> otherwise.
-     * @param closeSession Pass <code>true</code> to close the session
+     * @param closeSession Pass <code>true</code> to close the session.
+     *                     <code>false</code> to only detach from the session.
      */
      void closeDerived(boolean networkup, boolean closeSession)
     {
