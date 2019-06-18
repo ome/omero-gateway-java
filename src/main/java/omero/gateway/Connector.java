@@ -681,8 +681,9 @@ class Connector
      * 
      * @param networkup Pass <code>true</code> if the network is up,
      * <code>false</code> otherwise.
+     * @param closeSession Pass <code>true</code> to close the session
      */
-     void close(boolean networkup)
+     void close(boolean networkup, boolean closeSession)
     {
         secureClient.setFastShutdown(!networkup);
         if (unsecureClient != null) 
@@ -691,19 +692,30 @@ class Connector
             shutDownServices(true);
         }
         String id = secureClient.getSessionId();
+        String PROP = Gateway.PROP_SESSION_CLOSED;
+        if (!closeSession) {
+            try {
+                secureClient.getSession().detachOnDestroy();
+                if (unsecureClient != null)
+                    unsecureClient.getSession().detachOnDestroy();
+            } catch (ServerError e) {
+                logger.warn(this, new LogMessage("Could not detach from server session", e));
+            }
+            PROP = Gateway.PROP_SESSION_DETACHED;
+        }
         secureClient.__del__(); // Won't throw.
-        this.pcs.firePropertyChange(Gateway.PROP_SESSION_CLOSED, null, id);
+        this.pcs.firePropertyChange(PROP, null, id);
         if (unsecureClient != null) {
             id = unsecureClient.getSessionId();
             unsecureClient.__del__();
-            this.pcs.firePropertyChange(Gateway.PROP_SESSION_CLOSED, null, id);
+            this.pcs.firePropertyChange(PROP, null, id);
         }
         if (username == null)
             this.pcs.firePropertyChange(Gateway.PROP_CONNECTOR_CLOSED, null, id);
         else
             this.pcs.firePropertyChange(Gateway.PROP_CONNECTOR_CLOSED, null, id
                     + "_" + username);
-        closeDerived(networkup);
+        closeDerived(networkup, closeSession);
     }
 
     /**
@@ -711,11 +723,11 @@ class Connector
      */
      //TODO: along with the TODO on derived, this will need to be reviewed
      //for race conditions.
-     void closeImport()
+     void closeImport(boolean closeSession)
     {
         shutdownImports();
         try {
-            closeDerived(false);
+            closeDerived(false, closeSession);
         } catch (Throwable e) {
             logger.warn(this, new LogMessage("Exception on closeDerived: ", e));
         }
@@ -726,12 +738,13 @@ class Connector
      * 
      * @param networkup Pass <code>true</code> if the network is up,
      * <code>false</code> otherwise.
+     * @param closeSession Pass <code>true</code> to close the session
      */
-     void closeDerived(boolean networkup)
+     void closeDerived(boolean networkup, boolean closeSession)
     {
         for (final Connector c : derived.asMap().values()) {
             try {
-                c.close(networkup);
+                c.close(networkup, closeSession);
             } catch (Throwable e) {
                 logger.warn(this, String.format("Failed to close(%s) service: %s",
                         networkup, c));

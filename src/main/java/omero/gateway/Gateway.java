@@ -117,6 +117,9 @@ public class Gateway implements AutoCloseable {
     /** Property to indicate that a session has been closed */
     public static final String PROP_SESSION_CLOSED = "PROP_SESSION_CLOSED";
 
+    /** Property to indicate that client got detached from a session */
+    public static final String PROP_SESSION_DETACHED = "PROP_SESSION_DETACHED";
+
     /** Property to indicate that a {@link Facility} has been created */
     public static final String PROP_FACILITY_CREATED = "PROP_FACILITY_CREATED";
     
@@ -181,6 +184,9 @@ public class Gateway implements AutoCloseable {
     
     /** Flag to indicate that executor threads should be shutdown on disconnect */
     private boolean executorShutdownOnDisconnect = false;
+
+    /** Flag to indicate the user is connected to an already existing session */
+    private boolean isSessionLogin = false;
 
     /**
      * Creates a new Gateway instance
@@ -311,7 +317,7 @@ public class Gateway implements AutoCloseable {
         i = connectors.iterator();
         while (i.hasNext()) {
             try {
-                i.next().close(online);
+                i.next().close(online, !isSessionLogin);
             } catch (Throwable e) {
                 if (log != null) {
                     log.warn(this, new LogMessage("Cannot close connector", e));
@@ -364,7 +370,7 @@ public class Gateway implements AutoCloseable {
                 // failed to join so we create a new one, first we shut down
                 try {
                     c.shutDownServices(true);
-                    c.close(networkup);
+                    c.close(networkup, !isSessionLogin);
                 } catch (Throwable e) {
                     if (log != null)
                         log.error(this, new LogMessage(
@@ -398,7 +404,7 @@ public class Gateway implements AutoCloseable {
 
     /**
      * Get the ID of the current session
-     * 
+     *
      * @param user
      *            The user to get the session ID for
      * @return See above
@@ -524,7 +530,7 @@ public class Gateway implements AutoCloseable {
             if (c != null) {
                 if (StringUtils.isNotEmpty(userName))
                     c = c.getConnector(userName);
-                c.closeImport();
+                c.closeImport(!isSessionLogin);
             }
         } catch (Throwable e) {
             if (log != null)
@@ -1038,6 +1044,7 @@ public class Gateway implements AutoCloseable {
             try {
                 entryEncrypted = secureClient.joinSession(username);
                 connected = true;
+                isSessionLogin = true;
             } catch (Exception e) {
                 // Although username looks like a session ID it apparently isn't
                 // one.
@@ -1369,8 +1376,19 @@ public class Gateway implements AutoCloseable {
             return;
 
         for (Connector c : clist) {
-            c.close(isNetworkUp(true));
+            c.close(isNetworkUp(true), !isSessionLogin);
         }
+    }
+
+    /**
+     * By default the session is closed if it was initialized
+     * by the gateway. This method allows to override this.
+     * Has to be called after <code>connect()</code>.
+     * @param closeSession Pass <code>false</code> to not close
+     *                     the session on disconnect
+     */
+    public void closeSessionOnExit(boolean closeSession) {
+        this.isSessionLogin = !closeSession;
     }
 
     /**
@@ -1570,7 +1588,7 @@ public class Gateway implements AutoCloseable {
         Connector c = getConnector(ctx, true, true);
         if (c == null)
             return;
-        c.closeDerived(isNetworkUp(true));
+        c.closeDerived(isNetworkUp(true), !isSessionLogin);
     }
 
     /**
