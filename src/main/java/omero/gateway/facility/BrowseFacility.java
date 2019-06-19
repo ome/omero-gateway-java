@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -547,6 +548,39 @@ public class BrowseFacility extends Facility {
         return Collections.emptyList();
     }
 
+    /**
+     * Load project by name
+     *
+     * @param ctx
+     *            The {@link SecurityContext}
+     * @param name
+     *            The name of the project
+     *
+     * @return A collection of {@link ProjectData}s
+     * @throws DSOutOfServiceException
+     *             If the connection is broken, or not logged in
+     * @throws DSAccessException
+     *             If an error occurred while trying to retrieve data from OMERO
+     *             service.
+     */
+    public Collection<ProjectData> getProjects(SecurityContext ctx, String name) throws DSOutOfServiceException, DSAccessException {
+        try {
+            IQueryPrx proxy = gateway.getQueryService(ctx);
+            StringBuilder sb = new StringBuilder();
+            ParametersI param = new ParametersI();
+            param.add("name", omero.rtypes.rstring(name));
+            sb.append("select project from Project as p ");
+            sb.append("where p.name == :name");
+            List<IObject> results = proxy.findAllByQuery(sb.toString(), param);
+            Collection<Long> ids = results.stream().map(d -> d.getId().getValue()).collect(Collectors.toList());
+            return getProjects(ctx, ids);
+        } catch (Throwable t) {
+            handleException(this, t, "Could not load wells");
+        }
+        return null;
+    }
+
+
     /** Load Datasets */
 
     /**
@@ -672,6 +706,39 @@ public class BrowseFacility extends Facility {
 
         return Collections.emptyList();
     }
+
+    /**
+     * Load dataset by name
+     *
+     * @param ctx
+     *            The {@link SecurityContext}
+     * @param name
+     *            The name of the dataset
+     *
+     * @return A collection of {@link DatasetData}s
+     * @throws DSOutOfServiceException
+     *             If the connection is broken, or not logged in
+     * @throws DSAccessException
+     *             If an error occurred while trying to retrieve data from OMERO
+     *             service.
+     */
+    public Collection<DatasetData> getDatasets(SecurityContext ctx, String name) throws DSOutOfServiceException, DSAccessException {
+        try {
+            IQueryPrx proxy = gateway.getQueryService(ctx);
+            StringBuilder sb = new StringBuilder();
+            ParametersI param = new ParametersI();
+            param.add("name", omero.rtypes.rstring(name));
+            sb.append("select dataset from Dataset as ds ");
+            sb.append("where ds.name == :name");
+            List<IObject> results = proxy.findAllByQuery(sb.toString(), param);
+            Collection<Long> ids = results.stream().map(d -> d.getId().getValue()).collect(Collectors.toList());
+            return getDatasets(ctx, ids);
+        } catch (Throwable t) {
+            handleException(this, t, "Could not load wells");
+        }
+        return null;
+    }
+
 
     /** Load Screens */
 
@@ -799,6 +866,38 @@ public class BrowseFacility extends Facility {
         return Collections.emptyList();
     }
 
+    /**
+     * Load screen by name
+     *
+     * @param ctx
+     *            The {@link SecurityContext}
+     * @param name
+     *            The name of the screen
+     *
+     * @return A collection of {@link ScreenData}s
+     * @throws DSOutOfServiceException
+     *             If the connection is broken, or not logged in
+     * @throws DSAccessException
+     *             If an error occurred while trying to retrieve data from OMERO
+     *             service.
+     */
+    public Collection<ScreenData> getScreens(SecurityContext ctx, String name) throws DSOutOfServiceException, DSAccessException {
+        try {
+            IQueryPrx proxy = gateway.getQueryService(ctx);
+            StringBuilder sb = new StringBuilder();
+            ParametersI param = new ParametersI();
+            param.add("name", omero.rtypes.rstring(name));
+            sb.append("select screen from Screen as s ");
+            sb.append("where s.name == :name");
+            List<IObject> results = proxy.findAllByQuery(sb.toString(), param);
+            Collection<Long> ids = results.stream().map(d -> d.getId().getValue()).collect(Collectors.toList());
+            return getScreens(ctx, ids);
+        } catch (Throwable t) {
+            handleException(this, t, "Could not load wells");
+        }
+        return null;
+    }
+
     /** Load PLates */
 
     /**
@@ -923,6 +1022,38 @@ public class BrowseFacility extends Facility {
         }
 
         return Collections.emptyList();
+    }
+
+    /**
+     * Load plate by name
+     *
+     * @param ctx
+     *            The {@link SecurityContext}
+     * @param name
+     *            The name of the plate
+     *
+     * @return A collection of {@link PlateData}s
+     * @throws DSOutOfServiceException
+     *             If the connection is broken, or not logged in
+     * @throws DSAccessException
+     *             If an error occurred while trying to retrieve data from OMERO
+     *             service.
+     */
+    public Collection<PlateData> getPlates(SecurityContext ctx, String name) throws DSOutOfServiceException, DSAccessException {
+        try {
+            IQueryPrx proxy = gateway.getQueryService(ctx);
+            StringBuilder sb = new StringBuilder();
+            ParametersI param = new ParametersI();
+            param.add("name", omero.rtypes.rstring(name));
+            sb.append("select plate from Plate as p ");
+            sb.append("where p.name == :name");
+            List<IObject> results = proxy.findAllByQuery(sb.toString(), param);
+            Collection<Long> ids = results.stream().map(d -> d.getId().getValue()).collect(Collectors.toList());
+            return getPlates(ctx, ids);
+        } catch (Throwable t) {
+            handleException(this, t, "Could not load wells");
+        }
+        return null;
     }
 
     /**
@@ -1320,6 +1451,38 @@ public class BrowseFacility extends Facility {
         }
 
         return Collections.emptyList();
+    }
+
+    /**
+     * Load image by name
+     *
+     * @param ctx
+     *            The {@link SecurityContext}
+     * @param name
+     *            The name of the image
+     *
+     * @return A collection of {@link ImageData}s
+     * @throws DSOutOfServiceException
+     *             If the connection is broken, or not logged in
+     * @throws DSAccessException
+     *             If an error occurred while trying to retrieve data from OMERO
+     *             service.
+     */
+    public Collection<ImageData> getImages(SecurityContext ctx, String name) throws DSOutOfServiceException, DSAccessException {
+        try {
+            IQueryPrx proxy = gateway.getQueryService(ctx);
+            StringBuilder sb = new StringBuilder();
+            ParametersI param = new ParametersI();
+            param.add("name", omero.rtypes.rstring(name));
+            sb.append("select image from Image as i ");
+            sb.append("where i.name == :name");
+            List<IObject> results = proxy.findAllByQuery(sb.toString(), param);
+            Collection<Long> ids = results.stream().map(d -> d.getId().getValue()).collect(Collectors.toList());
+            return getImages(ctx, ids);
+        } catch (Throwable t) {
+            handleException(this, t, "Could not load wells");
+        }
+        return null;
     }
 
     /**
