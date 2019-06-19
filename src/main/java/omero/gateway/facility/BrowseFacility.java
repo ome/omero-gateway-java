@@ -569,8 +569,8 @@ public class BrowseFacility extends Facility {
             StringBuilder sb = new StringBuilder();
             ParametersI param = new ParametersI();
             param.add("name", omero.rtypes.rstring(name));
-            sb.append("select project from Project as p ");
-            sb.append("where p.name == :name");
+            sb.append("select p from Project as p ");
+            sb.append("where p.name = :name");
             List<IObject> results = proxy.findAllByQuery(sb.toString(), param);
             Collection<Long> ids = results.stream().map(d -> d.getId().getValue()).collect(Collectors.toList());
             return getProjects(ctx, ids);
@@ -728,8 +728,8 @@ public class BrowseFacility extends Facility {
             StringBuilder sb = new StringBuilder();
             ParametersI param = new ParametersI();
             param.add("name", omero.rtypes.rstring(name));
-            sb.append("select dataset from Dataset as ds ");
-            sb.append("where ds.name == :name");
+            sb.append("select ds from Dataset as ds ");
+            sb.append("where ds.name = :name");
             List<IObject> results = proxy.findAllByQuery(sb.toString(), param);
             Collection<Long> ids = results.stream().map(d -> d.getId().getValue()).collect(Collectors.toList());
             return getDatasets(ctx, ids);
@@ -887,8 +887,8 @@ public class BrowseFacility extends Facility {
             StringBuilder sb = new StringBuilder();
             ParametersI param = new ParametersI();
             param.add("name", omero.rtypes.rstring(name));
-            sb.append("select screen from Screen as s ");
-            sb.append("where s.name == :name");
+            sb.append("select s from Screen as s ");
+            sb.append("where s.name = :name");
             List<IObject> results = proxy.findAllByQuery(sb.toString(), param);
             Collection<Long> ids = results.stream().map(d -> d.getId().getValue()).collect(Collectors.toList());
             return getScreens(ctx, ids);
@@ -1045,8 +1045,8 @@ public class BrowseFacility extends Facility {
             StringBuilder sb = new StringBuilder();
             ParametersI param = new ParametersI();
             param.add("name", omero.rtypes.rstring(name));
-            sb.append("select plate from Plate as p ");
-            sb.append("where p.name == :name");
+            sb.append("select p from Plate as p ");
+            sb.append("where p.name = :name");
             List<IObject> results = proxy.findAllByQuery(sb.toString(), param);
             Collection<Long> ids = results.stream().map(d -> d.getId().getValue()).collect(Collectors.toList());
             return getPlates(ctx, ids);
@@ -1474,8 +1474,8 @@ public class BrowseFacility extends Facility {
             StringBuilder sb = new StringBuilder();
             ParametersI param = new ParametersI();
             param.add("name", omero.rtypes.rstring(name));
-            sb.append("select image from Image as i ");
-            sb.append("where i.name == :name");
+            sb.append("select i from Image as i ");
+            sb.append("where i.name = :name");
             List<IObject> results = proxy.findAllByQuery(sb.toString(), param);
             Collection<Long> ids = results.stream().map(d -> d.getId().getValue()).collect(Collectors.toList());
             return getImages(ctx, ids);
