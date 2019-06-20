@@ -29,6 +29,10 @@ import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 import java.util.Arrays;
 
+import omero.ServerError;
+import omero.api.IQueryPrx;
+import omero.gateway.model.FilesetData;
+import omero.model.FilesetI;
 import org.apache.commons.collections.CollectionUtils;
 
 import omero.api.IMetadataPrx;
@@ -259,6 +263,69 @@ public class MetadataFacility extends Facility {
         }
 
         return result;
+    }
+
+    /**
+     * Get the file paths of the image in the managed repository
+     * @param ctx The SecurityContext
+     * @param img The image
+     * @return See above
+     * @throws DSOutOfServiceException
+     * @throws DSAccessException
+     */
+    public List<String> getManagedRepositoriesPaths(SecurityContext ctx, ImageData img) throws DSOutOfServiceException, DSAccessException {
+        try {
+            FilesetData fs = loadFileset(ctx, img);
+            if (fs != null)
+                return fs.getAbsolutePaths();
+        } catch (Throwable t) {
+            handleException(this, t, "Could not get the file paths.");
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * Get the original file paths where the image was imported from.
+     * @param ctx The SecurityContext
+     * @param img The image
+     * @return See above
+     * @throws DSOutOfServiceException
+     * @throws DSAccessException
+     */
+    public List<String> getOriginalPaths(SecurityContext ctx, ImageData img) throws DSOutOfServiceException, DSAccessException {
+        try {
+            FilesetData fs = loadFileset(ctx, img);
+            if (fs != null)
+                return fs.getUsedFilePaths();
+        } catch (Throwable t) {
+            handleException(this, t, "Could not get the file paths.");
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * Load the Fileset for an image
+     * @param ctx The SecurityContext
+     * @param img The image
+     * @return The fileset
+     * @throws ServerError
+     * @throws DSOutOfServiceException
+     */
+    private FilesetData loadFileset(SecurityContext ctx, ImageData img) throws ServerError, DSOutOfServiceException {
+        String query = "select fs from Fileset as fs " +
+                "join fetch fs.images as image " +
+                "left outer join fetch fs.usedFiles as usedFile " +
+                "join fetch usedFile.originalFile as f " +
+                "join fetch f.hasher " +
+                "where image.id = :id";
+
+        IQueryPrx service = gateway.getQueryService(ctx);
+        ParametersI param = new ParametersI();
+        param.addId(img.getId());
+        FilesetI fs = (FilesetI) service.findByQuery(query, param);
+        if (fs != null)
+            return new FilesetData(fs);
+        return null;
     }
 
 }
