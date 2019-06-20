@@ -1655,12 +1655,10 @@ public class BrowseFacility extends Facility {
                 throw new IllegalArgumentException("Only ScreenData, PlateData, ProjectData, DatasetData and ImageData are supported.");
 
             IQueryPrx proxy = gateway.getQueryService(ctx);
-            StringBuilder sb = new StringBuilder();
+            String query = "select o.id from " + t + " as o where o.name = :name";
             ParametersI param = new ParametersI();
             param.add("name", omero.rtypes.rstring(name));
-            sb.append("select o.id from " + t + " as o ");
-            sb.append("where o.name = :name");
-            List<List<RType>> res = proxy.projection(sb.toString(), param);
+            List<List<RType>> res = proxy.projection(query, param);
             Collection<Long> ids = res.stream().flatMap(l -> l.stream()).
                     map(o -> ((RLong) o).getValue()).collect(Collectors.toList());
             if (type.equals(ScreenData.class))
