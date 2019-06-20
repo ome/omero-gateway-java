@@ -177,6 +177,9 @@ class Connector
 
     /** The username if this is a derived connector */
     private String username = null;
+
+    /** Flag to indicate if connected to an already existing session */
+    private boolean isSessionLogin = false;
     
     /** The PropertyChangeSupport */
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
@@ -193,11 +196,11 @@ class Connector
      * @throws Exception Thrown if entry points cannot be initialized.
      */
     Connector(SecurityContext context, client client,
-            ServiceFactoryPrx entryEncrypted, boolean encrypted, Logger logger)
+            ServiceFactoryPrx entryEncrypted, boolean encrypted, boolean sessionLogin, Logger logger)
                     throws Exception
     {
         this(context, client,
-                entryEncrypted, encrypted, null, logger);
+                entryEncrypted, encrypted, sessionLogin, null, logger);
     }
     
     /**
@@ -213,7 +216,7 @@ class Connector
      * @throws Exception Thrown if entry points cannot be initialized.
      */
     Connector(SecurityContext context, client client,
-            ServiceFactoryPrx entryEncrypted, boolean encrypted, String username, Logger logger)
+            ServiceFactoryPrx entryEncrypted, boolean encrypted, boolean sessionLogin, String username, Logger logger)
                     throws Exception
     {
         if (context == null)
@@ -233,6 +236,7 @@ class Connector
         this.logger = logger;
         this.secureClient = client;
         this.entryEncrypted = entryEncrypted;
+        this.isSessionLogin = sessionLogin;
         this.context = context;
         final MapMaker mapMaker = new MapMaker();
         statelessServices = mapMaker.makeMap();
@@ -678,25 +682,11 @@ class Connector
 
     /**
      * Closes the session.
-     *
-     * @deprecated Please use {@link #close(boolean, boolean)}
-     *
-     * @param networkup Pass <code>true</code> if the network is up,
-     * <code>false</code> otherwise.
-     */
-    void close(boolean networkup) {
-       this.close(networkup, true);
-    }
-
-    /**
-     * Closes the session.
      * 
      * @param networkup Pass <code>true</code> if the network is up,
      * <code>false</code> otherwise.
-     * @param closeSession Pass <code>true</code> to close the session,
-     *                     <code>false</code> to only detach from the session.
      */
-     void close(boolean networkup, boolean closeSession)
+     void close(boolean networkup)
     {
         secureClient.setFastShutdown(!networkup);
         if (unsecureClient != null) 
@@ -706,7 +696,7 @@ class Connector
         }
         String id = secureClient.getSessionId();
         String PROP = Gateway.PROP_SESSION_CLOSED;
-        if (!closeSession) {
+        if (isSessionLogin) {
             try {
                 secureClient.getSession().detachOnDestroy();
                 if (unsecureClient != null)
@@ -728,31 +718,17 @@ class Connector
         else
             this.pcs.firePropertyChange(Gateway.PROP_CONNECTOR_CLOSED, null, id
                     + "_" + username);
-        closeDerived(networkup, closeSession);
+        closeDerived(networkup);
     }
 
     /**
      * Closes the services initialized by the importer.
-     *
-     * @deprecated Please use {@link #closeImport(boolean)}
      */
-    //TODO: along with the TODO on derived, this will need to be reviewed
-    //for race conditions.
-    void closeImport()
-    {
-        this.closeImport(true);
-    }
-
-    /**
-     * Closes the services initialized by the importer.
-     * @param closeSession Pass <code>true</code> to close the session,
-     *                     <code>false</code> to only detach from the session.
-     */
-     void closeImport(boolean closeSession)
+     void closeImport()
     {
         shutdownImports();
         try {
-            closeDerived(false, closeSession);
+            closeDerived(false);
         } catch (Throwable e) {
             logger.warn(this, new LogMessage("Exception on closeDerived: ", e));
         }
@@ -760,29 +736,15 @@ class Connector
 
     /**
      * Closes the connectors associated to the master connector.
-     *
-     * @deprecated Please use {@link #closeDerived(boolean, boolean)}
-     *
-     * @param networkup Pass <code>true</code> if the network is up,
-     * <code>false</code> otherwise.
-     */
-    void closeDerived(boolean networkup) {
-        this.closeDerived(networkup, true);
-    }
-
-    /**
-     * Closes the connectors associated to the master connector.
      * 
      * @param networkup Pass <code>true</code> if the network is up,
      * <code>false</code> otherwise.
-     * @param closeSession Pass <code>true</code> to close the session.
-     *                     <code>false</code> to only detach from the session.
      */
-     void closeDerived(boolean networkup, boolean closeSession)
+     void closeDerived(boolean networkup)
     {
         for (final Connector c : derived.asMap().values()) {
             try {
-                c.close(networkup, closeSession);
+                c.close(networkup);
             } catch (Throwable e) {
                 logger.warn(this, String.format("Failed to close(%s) service: %s",
                         networkup, c));
@@ -1013,7 +975,7 @@ class Connector
                         .getUuid().getValue(), session.getUuid().getValue());
                 Connector.this.pcs.firePropertyChange(Gateway.PROP_SESSION_CREATED, null, client.getSessionId());
                 final Connector c = new Connector(context.copy(), client,
-                        userSession, unsecureClient == null, userName, logger);
+                        userSession, unsecureClient == null, isSessionLogin, userName, logger);
                 for (PropertyChangeListener l : Connector.this.pcs
                         .getPropertyChangeListeners())
                     c.addPropertyChangeListener(l);
@@ -1023,7 +985,18 @@ class Connector
             }
         });
     }
-    
+
+    /**
+     * By default the session is closed if it was initialized
+     * by the gateway. This method allows to override this.
+     * Has to be called after <code>connect()</code>.
+     * @param closeSession Pass <code>false</code> to not close
+     *                     the session on disconnect
+     */
+    void closeSessionOnExit(boolean closeSession) {
+        this.isSessionLogin = !closeSession;
+    }
+
     //
     // HELPERS
     //
