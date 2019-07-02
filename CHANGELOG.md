@@ -1,3 +1,12 @@
+5.5.3 (July 2019)
+-----------------
+
+- Bump omero-blitz version fixing SSL issues
+- Chgrp fixes (#10)
+- Don't close sessions opened by UUID (#11)
+- Add new gateway methods (#12, #13)
+- Correct handling of infinite pixel sizes (#14)
+
 5.5.2 (June 2019)
 -----------------
 
