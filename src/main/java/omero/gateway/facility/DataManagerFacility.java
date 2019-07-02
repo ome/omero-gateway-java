@@ -38,6 +38,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
+import omero.cmd.Chgrp2;
 import omero.gateway.util.Links;
 import omero.sys.ParametersI;
 import org.apache.commons.collections.CollectionUtils;
@@ -597,6 +598,9 @@ public class DataManagerFacility extends Facility {
             return null;
         
         if (project != null) {
+            if (project.getId() >= 0)
+                // reload to be sure we have the latest version
+                project = browse.findObject(ctx, ProjectData.class, project.getId());
             ProjectDatasetLink link = new ProjectDatasetLinkI();
             link = new ProjectDatasetLinkI();
             link.setChild(dataset.asDataset());
@@ -857,8 +861,30 @@ public class DataManagerFacility extends Facility {
                 Links.setObjects(link, to, null);
             updateObjects(ctx, links, null);
         } catch (Throwable t) {
-            handleException(this, t, "Cannot move the annotation.");
+            handleException(this, t, "Cannot move the object.");
         }
     }
-    
+
+    /**
+     * Move the given objects into another group
+     *
+     * @param ctx     The SecurityContext
+     * @param objects The objects to move into another group
+     * @param groupId The group to move the objects into
+     * @throws DSAccessException
+     * @throws DSOutOfServiceException
+     */
+    public void changeGroup(SecurityContext ctx, List<? extends DataObject> objects, long groupId)
+            throws DSAccessException, DSOutOfServiceException {
+        try {
+            String type = PojoMapper.getGraphType(objects.iterator().next().getClass());
+            Collection<Long> ids = objects.stream().map(o -> ((DataObject) o).getId())
+                    .collect(Collectors.toList());
+            Chgrp2 chgrp2 = Requests.chgrp().target(type).id(ids).toGroup(groupId).build();
+            CmdCallbackI cb = gateway.submit(ctx, chgrp2);
+            cb.loop(30, 500);
+        } catch (Throwable t) {
+            handleException(this, t, "Change group failed.");
+        }
+    }
 }
