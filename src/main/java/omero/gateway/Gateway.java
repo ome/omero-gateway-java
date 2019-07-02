@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -116,6 +115,9 @@ public class Gateway implements AutoCloseable {
 
     /** Property to indicate that a session has been closed */
     public static final String PROP_SESSION_CLOSED = "PROP_SESSION_CLOSED";
+
+    /** Property to indicate that client got detached from a session */
+    public static final String PROP_SESSION_DETACHED = "PROP_SESSION_DETACHED";
 
     /** Property to indicate that a {@link Facility} has been created */
     public static final String PROP_FACILITY_CREATED = "PROP_FACILITY_CREATED";
@@ -254,10 +256,9 @@ public class Gateway implements AutoCloseable {
      */
     public ExperimenterData connect(LoginCredentials c)
             throws DSOutOfServiceException {
-        client client = null;
         try {
-            client = createSession(c);
-            loggedInUser = login(client, c);
+            SessionWrapper session = createSession(c);
+            loggedInUser = login(session, c);
             connected = true;
             return loggedInUser;
         } catch (CannotCreateSessionException e) {
@@ -328,6 +329,8 @@ public class Gateway implements AutoCloseable {
     }
 
     /**
+     * @deprecated This method will be removed in future (never used).
+     *
      * Tries to rejoin the session.
      *
      * @return See above.
@@ -398,7 +401,7 @@ public class Gateway implements AutoCloseable {
 
     /**
      * Get the ID of the current session
-     * 
+     *
      * @param user
      *            The user to get the session ID for
      * @return See above
@@ -1002,7 +1005,7 @@ public class Gateway implements AutoCloseable {
      * 
      * @param c
      *            The login credentials
-     * @return The client
+     * @return A {@link SessionWrapper}
      * @throws DSOutOfServiceException
      *             Thrown if the service cannot be initialized.
      * @throws ServerError
@@ -1012,7 +1015,7 @@ public class Gateway implements AutoCloseable {
      * @throws CannotCreateSessionException
      *             If the session couldn't be created
      */
-    private client createSession(LoginCredentials c)
+    private SessionWrapper createSession(LoginCredentials c)
             throws DSOutOfServiceException, CannotCreateSessionException,
             PermissionDeniedException, ServerError {
         client secureClient = null;
@@ -1034,10 +1037,12 @@ public class Gateway implements AutoCloseable {
         ServiceFactoryPrx entryEncrypted = null;
         
         boolean connected = false;
+        boolean isSessionLogin = false;
         if (isSessionID(username)) {
             try {
                 entryEncrypted = secureClient.joinSession(username);
                 connected = true;
+                isSessionLogin = true;
             } catch (Exception e) {
                 // Although username looks like a session ID it apparently isn't
                 // one.
@@ -1095,7 +1100,7 @@ public class Gateway implements AutoCloseable {
         keepAliveExecutor = new ScheduledThreadPoolExecutor(1);
         keepAliveExecutor.scheduleWithFixedDelay(r, 60, 60, TimeUnit.SECONDS);
         
-        return secureClient;
+        return new SessionWrapper(secureClient, isSessionLogin);
     }
 
     /**
@@ -1118,21 +1123,21 @@ public class Gateway implements AutoCloseable {
     /**
      * Logs in a certain user
      * 
-     * @param client
-     *            The client
+     * @param session
+     *            The session
      * @param cred
      *            The login credentials
      * @return The user which is logged in
      * @throws DSOutOfServiceException
      *             Thrown if the service cannot be initialized.
      */
-    private ExperimenterData login(client client, LoginCredentials cred)
+    private ExperimenterData login(SessionWrapper session, LoginCredentials cred)
             throws DSOutOfServiceException {
         this.login = cred;
         Connector connector = null;
         SecurityContext ctx = null;
         try {
-            ServiceFactoryPrx entryEncrypted = client.getSession();
+            ServiceFactoryPrx entryEncrypted = session.client.getSession();
             
             // version check
             String clientVersion = Gateway.class.getPackage().getImplementationVersion();
@@ -1162,12 +1167,12 @@ public class Gateway implements AutoCloseable {
                 }
                 ctx = new SecurityContext(defaultID);
                 ctx.setServerInformation(cred.getServer());
-                connector = new Connector(ctx, client, entryEncrypted,
-                        cred.isEncryption(), log);
+                connector = new Connector(ctx, session.client, entryEncrypted,
+                        cred.isEncryption(), session.sessionLogin, log);
                 for (PropertyChangeListener l : this.pcs
                         .getPropertyChangeListeners())
                     connector.addPropertyChangeListener(l);
-                this.pcs.firePropertyChange(Gateway.PROP_CONNECTOR_CREATED, null, client.getSessionId());
+                this.pcs.firePropertyChange(Gateway.PROP_CONNECTOR_CREATED, null, session.client.getSessionId());
                 groupConnectorMap.put(ctx.getGroupID(), connector);
                 if (defaultID == cred.getGroupID())
                     return exp;
@@ -1176,8 +1181,8 @@ public class Gateway implements AutoCloseable {
                     ctx = new SecurityContext(cred.getGroupID());
                     ctx.setServerInformation(cred.getServer());
                     ctx.setCompression(cred.getCompression());
-                    connector = new Connector(ctx, client, entryEncrypted,
-                            cred.isEncryption(), log);
+                    connector = new Connector(ctx, session.client, entryEncrypted,
+                            cred.isEncryption(), session.sessionLogin, log);
                     for (PropertyChangeListener l : this.pcs
                             .getPropertyChangeListeners())
                         connector.addPropertyChangeListener(l);
@@ -1192,18 +1197,18 @@ public class Gateway implements AutoCloseable {
                 }
             }
             // Connector now controls the secureClient for closing.
-            String host = client.getProperty("omero.host");
+            String host = session.client.getProperty("omero.host");
             cred.getServer().setHostname(host);
-            String port = client.getProperty("omero.port");
+            String port = session.client.getProperty("omero.port");
             cred.getServer().setPort(Integer.parseInt(port));
             ctx = new SecurityContext(exp.getDefaultGroup().getId());
             ctx.setServerInformation(cred.getServer());
             ctx.setCompression(cred.getCompression());
-            connector = new Connector(ctx, client, entryEncrypted,
-                    cred.isEncryption(), log);
+            connector = new Connector(ctx, session.client, entryEncrypted,
+                    cred.isEncryption(), session.sessionLogin, log);
             for(PropertyChangeListener l : this.pcs.getPropertyChangeListeners())
                 connector.addPropertyChangeListener(l);
-            this.pcs.firePropertyChange(Gateway.PROP_CONNECTOR_CREATED, null, client.getSessionId());
+            this.pcs.firePropertyChange(Gateway.PROP_CONNECTOR_CREATED, null, session.client.getSessionId());
             groupConnectorMap.put(ctx.getGroupID(), connector);
             return exp;
         } catch (DSOutOfServiceException e) {
@@ -1370,6 +1375,24 @@ public class Gateway implements AutoCloseable {
 
         for (Connector c : clist) {
             c.close(isNetworkUp(true));
+        }
+    }
+
+    /**
+     * By default the session is closed if it was initialized
+     * by the gateway. This method allows to override this.
+     * Has to be called after <code>connect()</code>.
+     * @param closeSession Pass <code>false</code> to not close
+     *                     the session on disconnect
+     */
+    public void closeSessionOnExit(SecurityContext ctx, boolean closeSession) {
+        try {
+            Connector c = getConnector(ctx);
+            if (c != null)
+                c.closeSessionOnExit(closeSession);
+        } catch (DSOutOfServiceException e) {
+            if (log != null)
+                log.warn(this, String.format("Could not set close session flag; %s", e));
         }
     }
 
@@ -1654,7 +1677,7 @@ public class Gateway implements AutoCloseable {
             } else {
                 throw new IllegalArgumentException("must set security context with a valid group ID");
             }
-            c = new Connector(ctx, client, prx, login.isEncryption(), log);
+            c = new Connector(ctx, client, prx, login.isEncryption(), false, log);
             for (PropertyChangeListener l : this.pcs
                     .getPropertyChangeListeners())
                 c.addPropertyChangeListener(l);
@@ -1700,5 +1723,32 @@ public class Gateway implements AutoCloseable {
     public void close() throws Exception {
         if (connected)
             disconnect();
+    }
+
+    /**
+     * Wrapper holding a client and a flag if the client is hooked up
+     * to a already existing session.
+     */
+    private class SessionWrapper {
+        /**
+         * The client
+         **/
+        client client;
+
+        /**
+         * <code>true</code> if the session already existed,
+         * <code>false</code> if the session was created by the gateway
+         */
+        boolean sessionLogin;
+
+        /**
+         * @param client       The client
+         * @param sessionLogin <code>true</code> if the session already existed,
+         *                     <code>false</code> if the session was created by the gateway
+         */
+        SessionWrapper(client client, boolean sessionLogin) {
+            this.client = client;
+            this.sessionLogin = sessionLogin;
+        }
     }
 }

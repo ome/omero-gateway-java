@@ -177,6 +177,9 @@ class Connector
 
     /** The username if this is a derived connector */
     private String username = null;
+
+    /** Flag to indicate if connected to an already existing session */
+    private boolean isSessionLogin = false;
     
     /** The PropertyChangeSupport */
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
@@ -193,11 +196,11 @@ class Connector
      * @throws Exception Thrown if entry points cannot be initialized.
      */
     Connector(SecurityContext context, client client,
-            ServiceFactoryPrx entryEncrypted, boolean encrypted, Logger logger)
+            ServiceFactoryPrx entryEncrypted, boolean encrypted, boolean sessionLogin, Logger logger)
                     throws Exception
     {
         this(context, client,
-                entryEncrypted, encrypted, null, logger);
+                entryEncrypted, encrypted, sessionLogin, null, logger);
     }
     
     /**
@@ -213,7 +216,7 @@ class Connector
      * @throws Exception Thrown if entry points cannot be initialized.
      */
     Connector(SecurityContext context, client client,
-            ServiceFactoryPrx entryEncrypted, boolean encrypted, String username, Logger logger)
+            ServiceFactoryPrx entryEncrypted, boolean encrypted, boolean sessionLogin, String username, Logger logger)
                     throws Exception
     {
         if (context == null)
@@ -233,6 +236,7 @@ class Connector
         this.logger = logger;
         this.secureClient = client;
         this.entryEncrypted = entryEncrypted;
+        this.isSessionLogin = sessionLogin;
         this.context = context;
         final MapMaker mapMaker = new MapMaker();
         statelessServices = mapMaker.makeMap();
@@ -691,12 +695,23 @@ class Connector
             shutDownServices(true);
         }
         String id = secureClient.getSessionId();
+        String PROP = Gateway.PROP_SESSION_CLOSED;
+        if (isSessionLogin) {
+            try {
+                secureClient.getSession().detachOnDestroy();
+                if (unsecureClient != null)
+                    unsecureClient.getSession().detachOnDestroy();
+            } catch (ServerError e) {
+                logger.warn(this, new LogMessage("Could not detach from server session", e));
+            }
+            PROP = Gateway.PROP_SESSION_DETACHED;
+        }
         secureClient.__del__(); // Won't throw.
-        this.pcs.firePropertyChange(Gateway.PROP_SESSION_CLOSED, null, id);
+        this.pcs.firePropertyChange(PROP, null, id);
         if (unsecureClient != null) {
             id = unsecureClient.getSessionId();
             unsecureClient.__del__();
-            this.pcs.firePropertyChange(Gateway.PROP_SESSION_CLOSED, null, id);
+            this.pcs.firePropertyChange(PROP, null, id);
         }
         if (username == null)
             this.pcs.firePropertyChange(Gateway.PROP_CONNECTOR_CLOSED, null, id);
@@ -709,8 +724,6 @@ class Connector
     /**
      * Closes the services initialized by the importer.
      */
-     //TODO: along with the TODO on derived, this will need to be reviewed
-     //for race conditions.
      void closeImport()
     {
         shutdownImports();
@@ -962,7 +975,7 @@ class Connector
                         .getUuid().getValue(), session.getUuid().getValue());
                 Connector.this.pcs.firePropertyChange(Gateway.PROP_SESSION_CREATED, null, client.getSessionId());
                 final Connector c = new Connector(context.copy(), client,
-                        userSession, unsecureClient == null, userName, logger);
+                        userSession, unsecureClient == null, isSessionLogin, userName, logger);
                 for (PropertyChangeListener l : Connector.this.pcs
                         .getPropertyChangeListeners())
                     c.addPropertyChangeListener(l);
@@ -972,7 +985,18 @@ class Connector
             }
         });
     }
-    
+
+    /**
+     * By default the session is closed if it was initialized
+     * by the gateway. This method allows to override this.
+     * Has to be called after <code>connect()</code>.
+     * @param closeSession Pass <code>false</code> to not close
+     *                     the session on disconnect
+     */
+    void closeSessionOnExit(boolean closeSession) {
+        this.isSessionLogin = !closeSession;
+    }
+
     //
     // HELPERS
     //
