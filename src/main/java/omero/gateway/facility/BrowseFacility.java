@@ -29,7 +29,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import omero.RLong;
+import omero.RType;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -547,6 +550,26 @@ public class BrowseFacility extends Facility {
         return Collections.emptyList();
     }
 
+    /**
+     * Load project by name
+     *
+     * @param ctx
+     *            The {@link SecurityContext}
+     * @param name
+     *            The name of the project
+     *
+     * @return A collection of {@link ProjectData}s
+     * @throws DSOutOfServiceException
+     *             If the connection is broken, or not logged in
+     * @throws DSAccessException
+     *             If an error occurred while trying to retrieve data from OMERO
+     *             service.
+     */
+    public Collection<ProjectData> getProjects(SecurityContext ctx, String name) throws DSOutOfServiceException, DSAccessException {
+        return getObjectsByName(ctx, ProjectData.class, name);
+    }
+
+
     /** Load Datasets */
 
     /**
@@ -672,6 +695,26 @@ public class BrowseFacility extends Facility {
 
         return Collections.emptyList();
     }
+
+    /**
+     * Load dataset by name
+     *
+     * @param ctx
+     *            The {@link SecurityContext}
+     * @param name
+     *            The name of the dataset
+     *
+     * @return A collection of {@link DatasetData}s
+     * @throws DSOutOfServiceException
+     *             If the connection is broken, or not logged in
+     * @throws DSAccessException
+     *             If an error occurred while trying to retrieve data from OMERO
+     *             service.
+     */
+    public Collection<DatasetData> getDatasets(SecurityContext ctx, String name) throws DSOutOfServiceException, DSAccessException {
+        return getObjectsByName(ctx, DatasetData.class, name);
+    }
+
 
     /** Load Screens */
 
@@ -799,6 +842,25 @@ public class BrowseFacility extends Facility {
         return Collections.emptyList();
     }
 
+    /**
+     * Load screen by name
+     *
+     * @param ctx
+     *            The {@link SecurityContext}
+     * @param name
+     *            The name of the screen
+     *
+     * @return A collection of {@link ScreenData}s
+     * @throws DSOutOfServiceException
+     *             If the connection is broken, or not logged in
+     * @throws DSAccessException
+     *             If an error occurred while trying to retrieve data from OMERO
+     *             service.
+     */
+    public Collection<ScreenData> getScreens(SecurityContext ctx, String name) throws DSOutOfServiceException, DSAccessException {
+        return getObjectsByName(ctx, ScreenData.class, name);
+    }
+
     /** Load PLates */
 
     /**
@@ -923,6 +985,25 @@ public class BrowseFacility extends Facility {
         }
 
         return Collections.emptyList();
+    }
+
+    /**
+     * Load plate by name
+     *
+     * @param ctx
+     *            The {@link SecurityContext}
+     * @param name
+     *            The name of the plate
+     *
+     * @return A collection of {@link PlateData}s
+     * @throws DSOutOfServiceException
+     *             If the connection is broken, or not logged in
+     * @throws DSAccessException
+     *             If an error occurred while trying to retrieve data from OMERO
+     *             service.
+     */
+    public Collection<PlateData> getPlates(SecurityContext ctx, String name) throws DSOutOfServiceException, DSAccessException {
+        return getObjectsByName(ctx, PlateData.class, name);
     }
 
     /**
@@ -1323,6 +1404,25 @@ public class BrowseFacility extends Facility {
     }
 
     /**
+     * Load image by name
+     *
+     * @param ctx
+     *            The {@link SecurityContext}
+     * @param name
+     *            The name of the image
+     *
+     * @return A collection of {@link ImageData}s
+     * @throws DSOutOfServiceException
+     *             If the connection is broken, or not logged in
+     * @throws DSAccessException
+     *             If an error occurred while trying to retrieve data from OMERO
+     *             service.
+     */
+    public Collection<ImageData> getImages(SecurityContext ctx, String name) throws DSOutOfServiceException, DSAccessException {
+        return getObjectsByName(ctx, ImageData.class, name);
+    }
+
+    /**
      * Loads the folders for the given Ids. {@link FolderData} objects will be
      * fully initialized. (See {@link #getFolders(SecurityContext, Collection)} for
      * a faster but not fully initialized method)
@@ -1525,5 +1625,55 @@ public class BrowseFacility extends Facility {
             handleException(this, t, "Could not load lookup tables.");
         }
         return Collections.emptyList();
+    }
+
+    /**
+     * Load object by name
+     *
+     * @param ctx  The {@link SecurityContext}
+     * @param type The type of the object (ScreenData, PlateData, ProjectData, DatasetData or ImageData)
+     * @param name The name of the object
+     * @return A collection of objects
+     * @throws DSOutOfServiceException If the connection is broken, or not logged in
+     * @throws DSAccessException       If an error occurred while trying to retrieve data from OMERO
+     *                                 service.
+     */
+    private <T extends DataObject> Collection<T> getObjectsByName(SecurityContext ctx, Class<T> type, String name) throws DSOutOfServiceException, DSAccessException {
+        try {
+            String t = null;
+            if (type.equals(ScreenData.class))
+                t = "Screen";
+            else if (type.equals(PlateData.class))
+                t = "Plate";
+            else if (type.equals(ProjectData.class))
+                t = "Project";
+            else if (type.equals(DatasetData.class))
+                t = "Dataset";
+            else if (type.equals(ImageData.class))
+                t = "Image";
+            else
+                throw new IllegalArgumentException("Only ScreenData, PlateData, ProjectData, DatasetData and ImageData are supported.");
+
+            IQueryPrx proxy = gateway.getQueryService(ctx);
+            String query = "select o.id from " + t + " as o where o.name = :name";
+            ParametersI param = new ParametersI();
+            param.add("name", omero.rtypes.rstring(name));
+            List<List<RType>> res = proxy.projection(query, param);
+            Collection<Long> ids = res.stream().flatMap(l -> l.stream()).
+                    map(o -> ((RLong) o).getValue()).collect(Collectors.toList());
+            if (type.equals(ScreenData.class))
+                return (Collection<T>) getScreens(ctx, ids);
+            else if (type.equals(PlateData.class))
+                return (Collection<T>) getPlates(ctx, ids);
+            else if (type.equals(ProjectData.class))
+                return (Collection<T>) getProjects(ctx, ids);
+            else if (type.equals(DatasetData.class))
+                return (Collection<T>) getDatasets(ctx, ids);
+            else if (type.equals(ImageData.class))
+                return (Collection<T>) getImages(ctx, ids);
+        } catch (Throwable t) {
+            handleException(this, t, "Could not load objects");
+        }
+        return null;
     }
 }
