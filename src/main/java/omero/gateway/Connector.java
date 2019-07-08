@@ -152,8 +152,8 @@ class Connector
      * instances are stored separately */
     private final Multimap<String, StatefulServiceInterfacePrx> statefulServices;
 
-    /** Map of importStores to prevent re-lookup */
-    private final Map<OMEROMetadataStoreClient, String> importStores;
+    /** Reference to importStore to prevent re-lookup */
+    private OMEROMetadataStoreClient importStore;
 
     /** Collection of services to keep alive. */
     private final Multimap<Long, RenderingEnginePrx> reServices;
@@ -240,7 +240,6 @@ class Connector
         this.context = context;
         final MapMaker mapMaker = new MapMaker();
         statelessServices = mapMaker.makeMap();
-        importStores = mapMaker.makeMap();
         statefulServices = Multimaps.<String, StatefulServiceInterfacePrx>
         synchronizedMultimap(
                 HashMultimap.<String, StatefulServiceInterfacePrx>create());
@@ -590,6 +589,9 @@ class Connector
      OMEROMetadataStoreClient getImportStore()
             throws DSOutOfServiceException
     {
+        if (this.importStore != null)
+            return this.importStore;
+
         OMEROMetadataStoreClient importStore = new OMEROMetadataStoreClient();
         try {
             if (entryUnencrypted != null) {
@@ -599,7 +601,7 @@ class Connector
                 importStore.initialize(entryEncrypted);
             }
             this.pcs.firePropertyChange(Gateway.PROP_IMPORTSTORE_CREATED, null, importStore);
-            importStores.put(importStore, "");
+            this.importStore = importStore;
             return importStore;
         } catch (Exception e) {
             throw new DSOutOfServiceException("Failed to create import store", e);
@@ -850,20 +852,15 @@ class Connector
 
     /** Shuts down the import services.*/
      void shutdownImports() {
-        List<OMEROMetadataStoreClient> imports = new ArrayList<OMEROMetadataStoreClient>();
-        synchronized (importStores) {
-            imports.addAll(importStores.keySet());
-            importStores.clear();
-        }
-
-        for (OMEROMetadataStoreClient store : imports) {
-            try {
-                store.closeServices();
-                this.pcs.firePropertyChange(Gateway.PROP_IMPORTSTORE_CLOSED, null, store);
-            } catch (Exception e) {
-                logger.warn(this, new LogMessage("Failed to close import store:", e));
-            }
-        }
+         if (this.importStore != null) {
+             try {
+                 this.importStore.closeServices();
+                 this.importStore = null;
+                 this.pcs.firePropertyChange(Gateway.PROP_IMPORTSTORE_CLOSED, null, this.importStore);
+             } catch (Exception e) {
+                 logger.warn(this, new LogMessage("Failed to close import store:", e));
+             }
+         }
     }
 
     /** Shuts down the stateful services.*/
