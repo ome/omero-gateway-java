@@ -327,7 +327,9 @@ public abstract class Facility {
                 || e instanceof TimeoutException
                 || cause instanceof ObjectNotExistException
                 || e instanceof ObjectNotExistException
-                || cause instanceof DNSException || e instanceof DNSException)
+                || cause instanceof DNSException
+                || e instanceof DNSException
+                || e instanceof omero.ClientError)
             return ConnectionStatus.LOST_CONNECTION;
         else if (cause instanceof CommunicatorDestroyedException
                 || e instanceof CommunicatorDestroyedException)
