@@ -790,7 +790,9 @@ class Connector
                 entryUnencrypted.keepAllAlive(null);
         } catch (Exception e) {
             success = false;
-            logger.warn(this, new LogMessage("failed unencrypted keep alive: ", e));
+            entryUnencrypted = null;
+            logger.warn(this, new LogMessage("failed unencrypted keep alive," +
+                    "disabling unencrypted connection", e));
         }
 
         if (success) {
