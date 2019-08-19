@@ -24,6 +24,7 @@ package omero.gateway;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.net.InetAddress;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -1107,7 +1108,11 @@ public class Gateway implements AutoCloseable {
 
         if (c.isCheckNetwork()) {
             try {
-                String ip = InetAddress.getByName(c.getServer().getHostname())
+                String hn = c.getServer().getHostname();
+                // this could be a websocket URL
+                if (hn.contains("://"))
+                    hn = new URI(hn).getHost();
+                String ip = InetAddress.getByName(hn)
                         .getHostAddress();
                 networkChecker = new NetworkChecker(ip, log);
             } catch (Exception e) {
