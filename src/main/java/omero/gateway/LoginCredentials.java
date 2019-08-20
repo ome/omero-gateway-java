@@ -96,10 +96,10 @@ public class LoginCredentials {
      * @param password
      *            The password
      * @param host
-     *            The server hostname
+     *            The server hostname or websocket URL
      */
     public LoginCredentials(String username, String password, String host) {
-        this(username, password, host, omero.constants.GLACIER2PORT.value);
+        this(username, password, host, -1);
     }
 
     /**
@@ -111,7 +111,7 @@ public class LoginCredentials {
      * @param password
      *            The password
      * @param host
-     *            The server hostname
+     *            The server hostname or websocket URL
      * @param port
      *            The server port
      */
@@ -121,7 +121,18 @@ public class LoginCredentials {
         user.setUsername(username);
         user.setPassword(password);
         server.setHostname(host);
-        server.setPort(port);
+        if (port >= 0) {
+            server.setPort(port);
+        }
+        else {
+            // set default ports
+            if (!server.isURL()) {
+                server.setPort(omero.constants.GLACIER2PORT.value);
+            }
+            else if(server.getPort() < 0) {
+                server.setPort(443);
+            }
+        }
     }
 
     /**

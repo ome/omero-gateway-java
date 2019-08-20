@@ -150,6 +150,15 @@ public class ServerInformation {
         }
     }
 
+    /**
+     * Returns <code>true</code> if a websocket
+     * URL was specified.
+     * @return See above.
+     */
+    public boolean isURL() {
+        return this.uri.isAbsolute();
+    }
+
     @Override
     public String toString() {
         return "ServerInformation [uri=" + uri.toString() + "]";
