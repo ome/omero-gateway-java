@@ -22,6 +22,7 @@ package omero.gateway;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Objects;
 
 /**
  * Holds the network connection information of an OMERO server
@@ -150,5 +151,17 @@ public class ServerInformation {
     public String toString() {
         return "ServerInformation [uri=" + uri.toString() + "]";
     }
-    
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ServerInformation that = (ServerInformation) o;
+        return uri.equals(that.uri);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(uri);
+    }
 }
