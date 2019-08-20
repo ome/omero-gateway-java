@@ -99,7 +99,10 @@ public class ServerInformation {
     }
 
     /**
-     * Return the hostname.
+     * Return the hostname. Even if a websocket URL
+     * URL was specified only the hostname part will
+     * be returned by this method. Use {@link #getHost()}
+     * to get the full websocket URL.
      *
      * @return The hostname
      */
