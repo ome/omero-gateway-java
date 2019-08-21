@@ -71,7 +71,7 @@ public class ServerInformation {
             if ((new URI(hostname)).isAbsolute()) {
                 // this is already a URI like wss://example.org
                 this.uri = new URI(hostname);
-                if (port < 0) {
+                if (port >= 0 && this.uri.getPort() < 0) {
                     this.uri = new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(),
                             port, uri.getPath(), uri.getQuery(), uri.getFragment());
                 }
@@ -100,7 +100,7 @@ public class ServerInformation {
 
     /**
      * Return the hostname. Even if a websocket URL
-     * URL was specified only the hostname part will
+     * was specified only the hostname part will
      * be returned by this method. Use {@link #getHost()}
      * to get the full websocket URL.
      *
