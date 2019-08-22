@@ -149,7 +149,7 @@ public class TablesFacility extends Facility {
             anno.setFile(file);
             FileAnnotationData annotation = new FileAnnotationData(anno);
             annotation.setDescription(name);
-            if (ns != null)
+            if (ns != null && ns.trim().length() > 0)
                 annotation.setNameSpace(ns);
 
             annotation = (FileAnnotationData) dm.saveAndReturnObject(ctx,
