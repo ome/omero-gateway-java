@@ -1,3 +1,8 @@
+5.5.4 (August 2019)
+-------------------
+
+- Prevent import of large number of files to hang (#16)
+
 5.5.3 (July 2019)
 -----------------
 
