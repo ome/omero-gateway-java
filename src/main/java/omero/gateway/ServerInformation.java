@@ -99,6 +99,24 @@ public class ServerInformation {
     }
 
     /**
+     * Set the hostname or websocket URL
+     *
+     * @param host
+     *            See above
+     */
+    public void setHost(String host) {
+        try {
+            if ((new URI(host)).isAbsolute())
+                // this is already a URI like wss://example.org
+                this.uri = new URI(host);
+            else
+                this.uri = new URI(uri.getScheme(), uri.getUserInfo(), host,
+                        uri.getPort(), uri.getPath(), uri.getQuery(), uri.getFragment());
+        } catch (URISyntaxException e) {
+        }
+    }
+
+    /**
      * Return the hostname. Even if a websocket URL
      * was specified only the hostname part will
      * be returned by this method. Use {@link #getHost()}
@@ -111,21 +129,15 @@ public class ServerInformation {
     }
 
     /**
+     * @deprecated Renamed to {@link #setHost(String)}
+     *
      * Set the hostname or websocket URL
      * 
      * @param hostname
      *            See above
      */
     public void setHostname(String hostname) {
-        try {
-            if ((new URI(hostname)).isAbsolute())
-                // this is already a URI like wss://example.org
-                this.uri = new URI(hostname);
-            else
-                this.uri = new URI(uri.getScheme(), uri.getUserInfo(), hostname,
-                        uri.getPort(), uri.getPath(), uri.getQuery(), uri.getFragment());
-        } catch (URISyntaxException e) {
-        }
+        setHost(hostname);
     }
 
     /**
