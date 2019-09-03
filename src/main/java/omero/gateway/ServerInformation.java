@@ -68,7 +68,7 @@ public class ServerInformation {
      */
     public ServerInformation(String hostname, int port) {
         try {
-            if ((new URI(hostname)).isAbsolute()) {
+            if (hostname.contains(":/")) {
                 // this is already a URI like wss://example.org
                 this.uri = new URI(hostname);
                 if (port >= 0 && this.uri.getPort() < 0) {
@@ -77,6 +77,13 @@ public class ServerInformation {
                 }
             }
             else {
+                if (port < 0 && hostname.contains(":")) {
+                    try {
+                        String[] parts = hostname.split(":");
+                        port = Integer.parseInt(parts[parts.length-1]);
+                        hostname = parts[parts.length-2];
+                    } catch (Exception e) {}
+                }
                 this.uri = new URI(null,null, hostname,
                         port, null, null, null);
             }
@@ -106,12 +113,22 @@ public class ServerInformation {
      */
     public void setHost(String host) {
         try {
-            if ((new URI(host)).isAbsolute())
+            if (host.contains(":/")) {
                 // this is already a URI like wss://example.org
                 this.uri = new URI(host);
-            else
+            }
+            else {
+                int port = uri.getPort();
+                if (port < 0 && host.contains(":")) {
+                    try {
+                        String[] parts = host.split(":");
+                        port = Integer.parseInt(parts[parts.length-1]);
+                        host = parts[parts.length-2];
+                    } catch (Exception e) {}
+                }
                 this.uri = new URI(uri.getScheme(), uri.getUserInfo(), host,
-                        uri.getPort(), uri.getPath(), uri.getQuery(), uri.getFragment());
+                        port, uri.getPath(), uri.getQuery(), uri.getFragment());
+            }
         } catch (URISyntaxException e) {
         }
     }

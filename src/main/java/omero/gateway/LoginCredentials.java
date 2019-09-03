@@ -120,11 +120,11 @@ public class LoginCredentials {
         this();
         user.setUsername(username);
         user.setPassword(password);
-        server.setHostname(host);
+        server.setHost(host);
         if (port >= 0) {
             server.setPort(port);
         }
-        else {
+        else if (server.getPort() < 0) {
             // set default ports
             if (!server.isURL()) {
                 server.setPort(omero.constants.GLACIER2PORT.value);
