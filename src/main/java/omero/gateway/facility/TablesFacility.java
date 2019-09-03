@@ -88,8 +88,34 @@ public class TablesFacility extends Facility {
      *             service.
      */
     public TableData addTable(SecurityContext ctx, DataObject target,
-            String name, TableData data) throws DSOutOfServiceException,
-            DSAccessException {
+                              String name, TableData data)
+            throws DSOutOfServiceException, DSAccessException {
+        return addTable(ctx, target, name, null, data);
+    }
+
+    /**
+     * Adds a new table with the provided data
+     *
+     * @param ctx
+     *            The {@link SecurityContext}
+     * @param target
+     *            The object to attach the table to
+     * @param name
+     *            A name for the table (can be <code>null</code>)
+     * @param ns
+     *            An optional namespace for the file annotation
+     * @param data
+     *            The data
+     * @return The {@link TableData}
+     * @throws DSOutOfServiceException
+     *             If the connection is broken, or not logged in
+     * @throws DSAccessException
+     *             If an error occurred while trying to retrieve data from OMERO
+     *             service.
+     */
+    public TableData addTable(SecurityContext ctx, DataObject target,
+            String name, String ns, TableData data)
+            throws DSOutOfServiceException, DSAccessException {
         if (!Pojos.hasID(target))
             return null;
 
@@ -123,6 +149,8 @@ public class TablesFacility extends Facility {
             anno.setFile(file);
             FileAnnotationData annotation = new FileAnnotationData(anno);
             annotation.setDescription(name);
+            if (ns != null && ns.trim().length() > 0)
+                annotation.setNameSpace(ns);
 
             annotation = (FileAnnotationData) dm.saveAndReturnObject(ctx,
                     annotation);
