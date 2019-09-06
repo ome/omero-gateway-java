@@ -129,7 +129,7 @@ public class LoginCredentials {
             if (!server.isURL()) {
                 server.setPort(omero.constants.GLACIER2PORT.value);
             }
-            else if(server.getPort() < 0) {
+            else if (server.getPort() < 0) {
                 server.setPort(443);
             }
         }

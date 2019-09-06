@@ -101,8 +101,7 @@ public class ServerInformation {
     public String getHost() {
         if (this.uri.isAbsolute())
             return this.uri.toString();
-        else
-            return this.uri.getHost();
+        return this.uri.getHost();
     }
 
     /**
