@@ -187,6 +187,17 @@ public class ServerInformation {
         return this.uri.isAbsolute();
     }
 
+    /**
+     * Returns the protocol if a websocket URL was specified
+     * (empty String otherwise).
+     * @return See above.
+     */
+    public String getProtocol() {
+        if (isURL())
+            return this.uri.getScheme().toLowerCase();
+        return "";
+    }
+
     @Override
     public String toString() {
         return "ServerInformation [uri=" + uri.toString() + "]";

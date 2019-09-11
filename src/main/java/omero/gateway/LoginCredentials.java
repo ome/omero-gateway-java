@@ -20,7 +20,9 @@
  */
 package omero.gateway;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import omero.IllegalArgumentException;
 
@@ -62,6 +64,14 @@ public class LoginCredentials {
 
     /** Whether to check the client-server versions */
     private boolean checkVersion = true;
+
+    /** Default websocket ports (this might be moved into omero.constants
+     * in future) **/
+    private static Map<String,Integer> WS_PORTS = new HashMap<>();
+    static {
+        WS_PORTS.put("ws", 80);
+        WS_PORTS.put("wss", 443);
+    }
 
     /**
      * Creates a new instance
@@ -129,8 +139,9 @@ public class LoginCredentials {
             if (!server.isURL()) {
                 server.setPort(omero.constants.GLACIER2PORT.value);
             }
-            else if (server.getPort() < 0) {
-                server.setPort(443);
+            else if (server.getPort() < 0 &&
+                    WS_PORTS.containsKey(server.getProtocol())) {
+                server.setPort(WS_PORTS.get(server.getProtocol()));
             }
         }
     }
