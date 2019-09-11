@@ -29,7 +29,10 @@ package omero.gateway.cache;
  * @author Donald MacDonald &nbsp;&nbsp;&nbsp;&nbsp;
  * <a href="mailto:donald@lifesci.dundee.ac.uk">donald@lifesci.dundee.ac.uk</a>
  * @version 3.0
+ *
+ * @deprecated This interface is not used and will be removed in future.
  */
+@Deprecated
 public interface CacheService
 {
 

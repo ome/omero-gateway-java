@@ -199,7 +199,11 @@ public class Gateway implements AutoCloseable {
      *            A {@link Logger}
      * @param cacheService
      *            A {@link CacheService}, can be <code>null</code>
+     *
+     * @deprecated This constructor will be removed in future. Please
+     *             use {@link #Gateway(Logger) instead}
      */
+    @Deprecated
     public Gateway(Logger log, CacheService cacheService) {
         this(log, cacheService, null, true);
     }
@@ -220,12 +224,40 @@ public class Gateway implements AutoCloseable {
      *            disconnect (only taken into account if an
      *            {@link ExecutorService} was provided; the default cached
      *            thread pool will be shut down by default)
+     *
+     * @deprecated This constructor will be removed in future. Please
+     *             use {@link #Gateway(Logger, ExecutorService, boolean) instead}
      */
+    @Deprecated
     public Gateway(Logger log, CacheService cacheService,
             ExecutorService executorService,
             boolean executorShutdownOnDisconnect) {
         this.log = log;
         this.cacheService = cacheService;
+        this.executorService = executorService == null ? Executors
+                .newCachedThreadPool() : executorService;
+        this.executorShutdownOnDisconnect = executorService == null ? true
+                : executorShutdownOnDisconnect;
+    }
+
+    /**
+     * Creates a new Gateway instance
+     *
+     * @param log
+     *            A {@link Logger}
+     * @param executorService
+     *            A {@link ExecutorService} for handling asynchronous tasks, can
+     *            be <code>null</code> (in which case the Java built-in cached
+     *            thread pool will be used)
+     * @param executorShutdownOnDisconnect
+     *            Flag to indicate that executor threads should be shutdown on
+     *            disconnect (only taken into account if an
+     *            {@link ExecutorService} was provided; the default cached
+     *            thread pool will be shut down by default)
+     */
+    public Gateway(Logger log, ExecutorService executorService,
+                   boolean executorShutdownOnDisconnect) {
+        this.log = log;
         this.executorService = executorService == null ? Executors
                 .newCachedThreadPool() : executorService;
         this.executorShutdownOnDisconnect = executorService == null ? true
@@ -573,7 +605,10 @@ public class Gateway implements AutoCloseable {
      * Provides access to the {@link CacheService}
      * 
      * @return See above
+     *
+     * @deprecated This method will be removed in future.
      */
+    @Deprecated
     public CacheService getCacheService() {
         return cacheService;
     }
