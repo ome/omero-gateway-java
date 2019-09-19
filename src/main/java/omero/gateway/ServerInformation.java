@@ -114,7 +114,12 @@ public class ServerInformation {
         try {
             if (host.contains(":/")) {
                 // this is already a URI like wss://example.org
+                int port = this.uri.getPort();
                 this.uri = new URI(host);
+                if (port >= 0 && this.uri.getPort() < 0) {
+                    this.uri = new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(),
+                            port, uri.getPath(), uri.getQuery(), uri.getFragment());
+                }
             }
             else {
                 int port = uri.getPort();
