@@ -67,10 +67,12 @@ public class LoginCredentials {
 
     /** Default websocket ports (this might be moved into omero.constants
      * in future) **/
-    private static Map<String,Integer> WS_PORTS = new HashMap<>();
-    static {
-        WS_PORTS.put("ws", 80);
-        WS_PORTS.put("wss", 443);
+    private enum DefaultPort {
+        WS(80), WSS(443);
+        private final int port;
+        DefaultPort(int port) {
+            this.port = port;
+        }
     }
 
     /**
@@ -139,9 +141,12 @@ public class LoginCredentials {
             if (!server.isURL()) {
                 server.setPort(omero.constants.GLACIER2PORT.value);
             }
-            else if (server.getPort() < 0 &&
-                    WS_PORTS.containsKey(server.getProtocol())) {
-                server.setPort(WS_PORTS.get(server.getProtocol()));
+            else if (server.getPort() < 0) {
+                try {
+                    server.setPort(DefaultPort.valueOf(server.getProtocol().toUpperCase()).port);
+                } catch (IllegalArgumentException e) {
+                    // neither ws nor wss
+                }
             }
         }
     }

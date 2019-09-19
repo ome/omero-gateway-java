@@ -188,7 +188,7 @@ public class ServerInformation {
     }
 
     /**
-     * Returns the protocol if a websocket URL was specified
+     * Returns the protocol (lower case) if a websocket URL was specified
      * (empty String otherwise).
      * @return See above.
      */
@@ -213,6 +213,6 @@ public class ServerInformation {
 
     @Override
     public int hashCode() {
-        return Objects.hash(uri);
+        return uri.hashCode();
     }
 }
