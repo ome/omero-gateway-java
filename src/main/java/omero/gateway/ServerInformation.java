@@ -22,7 +22,6 @@ package omero.gateway;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Objects;
 
 /**
  * Holds the network connection information of an OMERO server
