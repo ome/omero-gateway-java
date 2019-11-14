@@ -89,6 +89,7 @@ import Glacier2.PermissionDeniedException;
 import Ice.DNSException;
 import Ice.SocketException;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.ListMultimap;
@@ -1197,8 +1198,8 @@ public class Gateway implements AutoCloseable {
             return serverMinor >= 5 && clientMinor >= 5;
         } catch (NumberFormatException nfe) {
             log.warn(this, String.format(
-                    "cannot compare server version %s.%s with client version %s.%s, assuming incompatible",
-                    server[0], server[1], client[0], client[1]));
+                    "cannot compare server version %s with client version %s, assuming incompatible",
+                    Joiner.on('.').join(server), Joiner.on('.').join(client)));
             return false;
         }
     }
