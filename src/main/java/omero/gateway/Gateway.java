@@ -1157,6 +1157,8 @@ public class Gateway implements AutoCloseable {
 
     /**
      * Test if server and client versions are compatible.
+     * Versions are provided as separate components with separators omitted,
+     * the more significant at lower array indices so the major number is at index zero.
      * Not {@code private} only to allow unit testing.
      * @param server server version, no {@code null}s
      * @param client client version, no {@code null}s
