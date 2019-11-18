@@ -1,6 +1,6 @@
 /*
  *------------------------------------------------------------------------------
- *  Copyright (C) 2015-2018 University of Dundee. All rights reserved.
+ *  Copyright (C) 2015-2019 University of Dundee. All rights reserved.
  *
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -89,6 +89,7 @@ import Glacier2.PermissionDeniedException;
 import Ice.DNSException;
 import Ice.SocketException;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.ListMultimap;
@@ -1154,7 +1155,55 @@ public class Gateway implements AutoCloseable {
         }
         return true;
     }
-    
+
+    /**
+     * Test if server and client versions are compatible.
+     * Versions are provided as separate components with separators omitted,
+     * the more significant at lower array indices so the major number is at index zero.
+     * Not {@code private} only to allow unit testing so not supported API.
+     * @param server server version, no {@code null}s
+     * @param client client version, no {@code null}s
+     * @return if they are compatible
+     */
+    boolean isCompatibleVersion(String[] server, String[] client) {
+        if (server.length < 1 || client.length < 1) {
+            return true;
+        }
+        /* Major versions present so compare. */
+        if (!server[0].equals(client[0])) {
+            /* Major version does not match. */
+            return false;
+        }
+        if (server.length < 2 || client.length < 2) {
+            return true;
+        }
+        /* Minor versions present so compare. */
+        if (server[1].equals(client[1])) {
+            /* Minor version matches. */
+            return true;
+        }
+        /* Major version matches, minor version does not match. */
+        try {
+            final int major = Integer.parseUnsignedInt(server[0]);
+            if (major < 5) {
+                /* Server and client are earlier than 5.0 so minor difference is breaking. */
+                return false;
+            } else if (major > 5) {
+                /* Server and client are 6.0 or later so minor difference is not breaking. */
+                return true;
+            }
+            /* Minor difference is breaking only before 5.5. */
+            final int serverMinor = Integer.parseUnsignedInt(server[1]);
+            final int clientMinor = Integer.parseUnsignedInt(client[1]);
+            return serverMinor >= 5 && clientMinor >= 5;
+        } catch (NumberFormatException nfe) {
+            log.warn(this, String.format(
+                    "cannot compare server version %s with client version %s, assuming incompatible",
+                    Joiner.on('.').join(server), Joiner.on('.').join(client)));
+            return false;
+        }
+    }
+
     /**
      * Logs in a certain user
      * 
@@ -1183,7 +1232,7 @@ public class Gateway implements AutoCloseable {
                     && cred.getCheckVersion()) {
                 String[] vc = clientVersion.split("\\.");
                 String[] vs = serverVersion.split("\\.");
-                if (!vc[0].equals(vs[0]) || !vc[1].equals(vs[1]))
+                if (!isCompatibleVersion(vs, vc))
                     throw new DSOutOfServiceException("Client version "
                             + clientVersion
                             + " is not compatible with server version "
