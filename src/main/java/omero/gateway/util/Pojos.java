@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
 
@@ -40,18 +41,13 @@ public class Pojos {
 
     /**
      * Extract the (distinct) ids from a collection of {@link DataObject}s
-     * 
-     * @param pojos
-     *            The {@link DataObject}s
+     *
+     * @param pojos The {@link DataObject}s
      * @return The ids
      */
     public static Collection<Long> extractIds(
             Collection<? extends DataObject> pojos) {
-        Collection<Long> result = new HashSet<Long>(pojos.size());
-        for (DataObject obj : pojos) {
-            result.add(obj.getId());
-        }
-        return result;
+        return pojos.parallelStream().map(p -> ((DataObject) p).getId()).collect(Collectors.toSet());
     }
 
     /**
