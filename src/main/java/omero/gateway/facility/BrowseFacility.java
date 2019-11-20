@@ -20,29 +20,19 @@
  */
 package omero.gateway.facility;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import omero.RLong;
 import omero.RType;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-
 import omero.api.IContainerPrx;
 import omero.api.IQueryPrx;
 import omero.api.IScriptPrx;
+import omero.api.ThumbnailStorePrx;
 import omero.gateway.Gateway;
 import omero.gateway.SecurityContext;
 import omero.gateway.exception.DSAccessException;
 import omero.gateway.exception.DSOutOfServiceException;
+import omero.gateway.model.PixelsData;
+import omero.gateway.util.PojoMapper;
+import omero.gateway.util.Pojos;
 import omero.model.ExperimenterGroup;
 import omero.model.Folder;
 import omero.model.IObject;
@@ -61,8 +51,24 @@ import omero.gateway.model.PlateData;
 import omero.gateway.model.ProjectData;
 import omero.gateway.model.ScreenData;
 import omero.gateway.model.WellData;
-import omero.gateway.util.PojoMapper;
-import omero.gateway.util.Pojos;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
 /**
  * A {@link Facility} for browsing the data hierarchy and retrieving
@@ -1675,5 +1681,62 @@ public class BrowseFacility extends Facility {
             handleException(this, t, "Could not load objects");
         }
         return null;
+    }
+
+    /**
+     * Get the thumbnails of the specified images
+     * @param ctx The {@link SecurityContext}
+     * @param ids The Image Ids
+     * @return A Map of thumbnails with the image ids as keys
+     * @throws DSOutOfServiceException If the connection is broken, or not logged in
+     * @throws DSAccessException       If an error occurred while trying to retrieve data from OMERO
+     *                                 service.
+     */
+    public Map<Long, BufferedImage> getThumbnails(SecurityContext ctx, Collection<Long> ids) throws DSOutOfServiceException, DSAccessException {
+        ConcurrentMap<Long, BufferedImage> thumbs = new ConcurrentHashMap<>();
+        Collection<ImageData> images = getImages(ctx, ids);
+        images.parallelStream().forEach(image -> {
+            try {
+                thumbs.put(image.getId(), getThumbnail(ctx, image));
+            } catch (Exception e) {
+                logError(this, "Failed to get thumbnail for image "+image.getId(), e);
+            }
+        });
+        return thumbs;
+    }
+
+    /**
+     * Get an image's thumbnail as {@link BufferedImage}
+     * @param ctx The {@link SecurityContext}
+     * @param img The image
+     * @return See above.
+     * @throws Exception If the thumbnail can't be accessed.
+     */
+    public BufferedImage getThumbnail(SecurityContext ctx, ImageData img) throws Exception {
+        ThumbnailStorePrx store = gateway.getThumbnailService(ctx);
+        ByteArrayInputStream stream = null;
+        try {
+            PixelsData pixels = img.getDefaultPixels();
+            store.setPixelsId(pixels.getId());
+            byte[] array = store.getThumbnail(
+                    omero.rtypes.rint(96), omero.rtypes.rint(96));
+            stream = new ByteArrayInputStream(array);
+            return ImageIO.read(stream);
+        }
+        catch(Exception e) {
+            throw e;
+        } finally {
+            try {
+                store.close();
+                if (stream != null)
+                    stream.close();
+            } catch (Exception e) {}
+            if (stream != null) {
+                try {
+                    stream.close();
+                } catch (Exception e) {
+                }
+            }
+        }
     }
 }
