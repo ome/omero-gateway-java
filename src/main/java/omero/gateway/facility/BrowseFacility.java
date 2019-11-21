@@ -1714,29 +1714,22 @@ public class BrowseFacility extends Facility {
      */
     public BufferedImage getThumbnail(SecurityContext ctx, ImageData img) throws Exception {
         ThumbnailStorePrx store = gateway.getThumbnailService(ctx);
-        ByteArrayInputStream stream = null;
         try {
             PixelsData pixels = img.getDefaultPixels();
             store.setPixelsId(pixels.getId());
             byte[] array = store.getThumbnail(
                     omero.rtypes.rint(96), omero.rtypes.rint(96));
-            stream = new ByteArrayInputStream(array);
-            return ImageIO.read(stream);
+            ByteArrayInputStream stream = new ByteArrayInputStream(array);
+            BufferedImage bi = ImageIO.read(stream);
+            stream.close();
+            return bi;
         }
         catch(Exception e) {
             throw e;
         } finally {
             try {
                 store.close();
-                if (stream != null)
-                    stream.close();
             } catch (Exception e) {}
-            if (stream != null) {
-                try {
-                    stream.close();
-                } catch (Exception e) {
-                }
-            }
         }
     }
 }
