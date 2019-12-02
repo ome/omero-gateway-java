@@ -23,6 +23,7 @@ package omero.gateway.facility;
 import omero.RLong;
 import omero.RType;
 import omero.api.IContainerPrx;
+import omero.api.IPixelsPrx;
 import omero.api.IQueryPrx;
 import omero.api.IScriptPrx;
 import omero.api.ThumbnailStorePrx;
@@ -38,6 +39,7 @@ import omero.model.Folder;
 import omero.model.IObject;
 import omero.model.Image;
 import omero.model.OriginalFile;
+import omero.model.RenderingDef;
 import omero.model.Well;
 import omero.sys.Parameters;
 import omero.sys.ParametersI;
@@ -1687,17 +1689,18 @@ public class BrowseFacility extends Facility {
      * Get the thumbnails of the specified images
      * @param ctx The {@link SecurityContext}
      * @param ids The Image Ids
+     * @param expId The experimenter Id (can be -1)
      * @return A Map of thumbnails with the image ids as keys
      * @throws DSOutOfServiceException If the connection is broken, or not logged in
      * @throws DSAccessException       If an error occurred while trying to retrieve data from OMERO
      *                                 service.
      */
-    public Map<Long, BufferedImage> getThumbnails(SecurityContext ctx, Collection<Long> ids) throws DSOutOfServiceException, DSAccessException {
+    public Map<Long, BufferedImage> getThumbnails(SecurityContext ctx, Collection<Long> ids, long expId) throws DSOutOfServiceException, DSAccessException {
         ConcurrentMap<Long, BufferedImage> thumbs = new ConcurrentHashMap<>();
         Collection<ImageData> images = getImages(ctx, ids);
         images.parallelStream().forEach(image -> {
             try {
-                thumbs.put(image.getId(), getThumbnail(ctx, image));
+                thumbs.put(image.getId(), getThumbnail(ctx, image, expId));
             } catch (Exception e) {
                 logError(this, "Failed to get thumbnail for image "+image.getId(), e);
             }
@@ -1709,12 +1712,18 @@ public class BrowseFacility extends Facility {
      * Get an image's thumbnail as {@link BufferedImage}
      * @param ctx The {@link SecurityContext}
      * @param img The image
+     * @param expId The experimenter Id (can be -1)
      * @return See above.
      * @throws Exception If the thumbnail can't be accessed.
      */
-    public BufferedImage getThumbnail(SecurityContext ctx, ImageData img) throws Exception {
+    public BufferedImage getThumbnail(SecurityContext ctx, ImageData img, long expId) throws Exception {
         ThumbnailStorePrx store = gateway.getThumbnailService(ctx);
         try {
+            if (expId >= 0) {
+                RenderingDef def = getRenderingSettings(ctx, img, expId);
+                if (def != null) store.setRenderingDefId(
+                        def.getId().getValue());
+            }
             PixelsData pixels = img.getDefaultPixels();
             store.setPixelsId(pixels.getId());
             byte[] array = store.getThumbnail(
@@ -1731,5 +1740,31 @@ public class BrowseFacility extends Facility {
                 store.close();
             } catch (Exception e) {}
         }
+    }
+
+    /**
+     * Retrieves the rendering settings for the image.
+     *
+     * @param ctx The security context.
+     * @param img  The image.
+     * @param userID	The id of the user who set the rendering settings.
+     * @return See above.
+     * @throws DSOutOfServiceException  If the connection is broken, or logged
+     *                                  in.
+     * @throws DSAccessException        If an error occurred while trying to
+     *                                  retrieve data from OMEDS service.
+     */
+    public RenderingDef getRenderingSettings(SecurityContext ctx, ImageData img,
+                                 long userID)
+            throws DSOutOfServiceException, DSAccessException
+    {
+
+        try {
+            IPixelsPrx service = gateway.getPixelsService(ctx);
+            return service.retrieveRndSettingsFor(img.getDefaultPixels().getId(), userID);
+        } catch (Exception e) {
+            handleException(this, e, "Cannot retrieve the rendering settings");
+        }
+        return null;
     }
 }
