@@ -20,7 +20,9 @@
  */
 package omero.gateway;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import omero.IllegalArgumentException;
 
@@ -63,6 +65,16 @@ public class LoginCredentials {
     /** Whether to check the client-server versions */
     private boolean checkVersion = true;
 
+    /** Default websocket ports (this might be moved into omero.constants
+     * in future) **/
+    private enum DefaultPort {
+        WS(80), WSS(443);
+        private final int port;
+        DefaultPort(int port) {
+            this.port = port;
+        }
+    }
+
     /**
      * Creates a new instance
      */
@@ -96,10 +108,10 @@ public class LoginCredentials {
      * @param password
      *            The password
      * @param host
-     *            The server hostname
+     *            The server hostname or websocket URL
      */
     public LoginCredentials(String username, String password, String host) {
-        this(username, password, host, omero.constants.GLACIER2PORT.value);
+        this(username, password, host, -1);
     }
 
     /**
@@ -111,7 +123,7 @@ public class LoginCredentials {
      * @param password
      *            The password
      * @param host
-     *            The server hostname
+     *            The server hostname or websocket URL
      * @param port
      *            The server port
      */
@@ -120,8 +132,23 @@ public class LoginCredentials {
         this();
         user.setUsername(username);
         user.setPassword(password);
-        server.setHostname(host);
-        server.setPort(port);
+        server.setHost(host);
+        if (port >= 0) {
+            server.setPort(port);
+        }
+        else if (server.getPort() < 0) {
+            // set default ports
+            if (!server.isURL()) {
+                server.setPort(omero.constants.GLACIER2PORT.value);
+            }
+            else if (server.getPort() < 0) {
+                try {
+                    server.setPort(DefaultPort.valueOf(server.getProtocol().toUpperCase()).port);
+                } catch (IllegalArgumentException e) {
+                    // neither ws nor wss
+                }
+            }
+        }
     }
 
     /**

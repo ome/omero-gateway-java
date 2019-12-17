@@ -304,7 +304,7 @@ public class Gateway implements AutoCloseable {
             throw new DSOutOfServiceException(e.getMessage(), e);
         } catch (DNSException e) {
             throw new DSOutOfServiceException("Can't resolve hostname "
-                    + c.getServer().getHostname(), e);
+                    + c.getServer().getHost(), e);
         }
     }
 
@@ -1064,10 +1064,10 @@ public class Gateway implements AutoCloseable {
         } else {
             username = c.getUser().getUsername();
             if (c.getServer().getPort() > 0)
-                secureClient = new client(c.getServer().getHostname(), c
+                secureClient = new client(c.getServer().getHost(), c
                         .getServer().getPort());
             else
-                secureClient = new client(c.getServer().getHostname());
+                secureClient = new client(c.getServer().getHost());
         }
         secureClient.setAgent(c.getApplicationName());
         ServiceFactoryPrx entryEncrypted = null;
@@ -1751,7 +1751,7 @@ public class Gateway implements AutoCloseable {
                         args.toArray(new String[args.size()]));
                 prx = client.createSession();
             } else {
-                client = new client(login.getServer().getHostname(),
+                client = new client(login.getServer().getHost(),
                         login.getServer().getPort());
                 prx = client.createSession(login.getUser().getUsername(), login
                         .getUser().getPassword());

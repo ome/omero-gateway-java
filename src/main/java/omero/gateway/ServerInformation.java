@@ -20,8 +20,11 @@
  */
 package omero.gateway;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 /**
- * Holds hostname and port of an OMERO server
+ * Holds the network connection information of an OMERO server
  * 
  * @author Dominik Lindner &nbsp;&nbsp;&nbsp;&nbsp; <a
  *         href="mailto:d.lindner@dundee.ac.uk">d.lindner@dundee.ac.uk</a>
@@ -30,49 +33,131 @@ package omero.gateway;
 
 public class ServerInformation {
 
-    /** The hostname */
-    private String hostname;
-
-    /** The port */
-    private int port;
+    /** The URI */
+    private URI uri;
 
     /**
      * Creates an empty instance
      */
     public ServerInformation() {
+        try {
+            this.uri = new URI(null, null, null,
+                    -1, null, null, null);
+        } catch (URISyntaxException e) {
+        }
+    }
 
+    /**
+     * Creates a new instance
+     *
+     * @param hostname
+     *            The hostname or websocket URL
+     */
+    public ServerInformation(String hostname) {
+        this(hostname, -1);
     }
 
     /**
      * Creates a new instance
      * 
      * @param hostname
-     *            The hostname
+     *            The hostname or websocket URL
      * @param port
      *            The port
      */
     public ServerInformation(String hostname, int port) {
-        super();
-        this.hostname = hostname;
-        this.port = port;
+        try {
+            if (hostname.contains(":/")) {
+                // this is already a URI like wss://example.org
+                this.uri = new URI(hostname);
+                if (port >= 0 && this.uri.getPort() < 0) {
+                    this.uri = new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(),
+                            port, uri.getPath(), uri.getQuery(), uri.getFragment());
+                }
+            }
+            else {
+                if (port < 0 && hostname.contains(":")) {
+                    try {
+                        String[] parts = hostname.split(":");
+                        port = Integer.parseInt(parts[parts.length-1]);
+                        hostname = parts[parts.length-2];
+                    } catch (Exception e) {}
+                }
+                this.uri = new URI(null,null, hostname,
+                        port, null, null, null);
+            }
+        } catch (URISyntaxException e) {
+        }
     }
 
     /**
-     * Return the hostname.
+     * Get the host information as required by the omero.client.
+     * In case a websocket URL was specified the full
+     * URL will be returned. If only a host name was
+     * specified only the host name will be returned.
+     * @return See above.
+     */
+    public String getHost() {
+        if (this.uri.isAbsolute())
+            return this.uri.toString();
+        return this.uri.getHost();
+    }
+
+    /**
+     * Set the hostname or websocket URL
+     *
+     * @param host
+     *            See above
+     */
+    public void setHost(String host) {
+        try {
+            if (host.contains(":/")) {
+                // this is already a URI like wss://example.org
+                int port = this.uri.getPort();
+                this.uri = new URI(host);
+                if (port >= 0 && this.uri.getPort() < 0) {
+                    this.uri = new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(),
+                            port, uri.getPath(), uri.getQuery(), uri.getFragment());
+                }
+            }
+            else {
+                int port = uri.getPort();
+                if (port < 0 && host.contains(":")) {
+                    try {
+                        String[] parts = host.split(":");
+                        port = Integer.parseInt(parts[parts.length-1]);
+                        host = parts[parts.length-2];
+                    } catch (Exception e) {}
+                }
+                this.uri = new URI(uri.getScheme(), uri.getUserInfo(), host,
+                        port, uri.getPath(), uri.getQuery(), uri.getFragment());
+            }
+        } catch (URISyntaxException e) {
+        }
+    }
+
+    /**
+     * Return the hostname. Even if a websocket URL
+     * was specified only the hostname part will
+     * be returned by this method. Use {@link #getHost()}
+     * to get the full websocket URL.
+     *
      * @return The hostname
      */
     public String getHostname() {
-        return hostname;
+        return uri.getHost();
     }
 
     /**
-     * Set the hostname
+     * @deprecated Renamed to {@link #setHost(String)}
+     *
+     * Set the hostname or websocket URL
      * 
      * @param hostname
      *            See above
      */
     public void setHostname(String hostname) {
-        this.hostname = hostname;
+        setHost(hostname);
     }
 
     /**
@@ -80,7 +165,7 @@ public class ServerInformation {
      * @return The port
      */
     public int getPort() {
-        return port;
+        return uri.getPort();
     }
 
     /**
@@ -90,43 +175,35 @@ public class ServerInformation {
      *            See above
      */
     public void setPort(int port) {
-        this.port = port;
+        try {
+            this.uri = new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(),
+                    port, uri.getPath(), uri.getQuery(), uri.getFragment());
+        } catch (URISyntaxException e) {
+        }
     }
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result
-                + ((hostname == null) ? 0 : hostname.hashCode());
-        result = prime * result + port;
-        return result;
+    /**
+     * Returns <code>true</code> if a websocket
+     * URL was specified.
+     * @return See above.
+     */
+    public boolean isURL() {
+        return this.uri.isAbsolute();
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        ServerInformation other = (ServerInformation) obj;
-        if (hostname == null) {
-            if (other.hostname != null)
-                return false;
-        } else if (!hostname.equals(other.hostname))
-            return false;
-        if (port != other.port)
-            return false;
-        return true;
+    /**
+     * Returns the protocol (lower case) if a websocket URL was specified
+     * (empty String otherwise).
+     * @return See above.
+     */
+    public String getProtocol() {
+        if (isURL())
+            return this.uri.getScheme().toLowerCase();
+        return "";
     }
 
     @Override
     public String toString() {
-        return "ServerInformation [hostname=" + hostname + ", port=" + port
-                + "]";
+        return "ServerInformation [uri=" + uri.toString() + "]";
     }
-
-    
 }

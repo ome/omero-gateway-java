@@ -23,7 +23,6 @@ package omero.gateway;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -966,7 +965,7 @@ class Connector
                 session = prx.createSessionWithTimeouts(p, 0, timeout);
                 // Create the userSession
                 omero.client client = new omero.client(context
-                        .getServerInformation().getHostname(), context
+                        .getServerInformation().getHost(), context
                         .getServerInformation().getPort());
                 ServiceFactoryPrx userSession = client.createSession(session
                         .getUuid().getValue(), session.getUuid().getValue());
