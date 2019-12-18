@@ -1,3 +1,11 @@
+5.6.0 (December 2019)
+---------------------
+
+- Allow connecting to 5.5 & 5.6 servers (#23)
+- Enable connections to web sockets (#21)
+- Add method to TableFacility (#18)
+- Re-correct handling of infinite pixel sizes (#15)
+
 5.5.4 (August 2019)
 -------------------
 
