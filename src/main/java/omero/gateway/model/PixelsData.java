@@ -256,9 +256,16 @@ public class PixelsData extends DataObject {
      */
     public Length getPixelSizeX(UnitsLength unit) throws BigResult {
         Length l = asPixels().getPhysicalSizeX();
-        if (l == null || l.getUnit().equals(UnitsLength.PIXEL))
+        if (l == null)
             return null;
-        return unit == null ? l : new LengthI(l, unit);
+        try {
+            return unit == null ? l : new LengthI(l, unit);
+        } catch (BigResult b) {
+            throw b;
+        }
+        catch (Exception e) {
+            return null;
+        }
     }
 
     /**
@@ -286,9 +293,16 @@ public class PixelsData extends DataObject {
      */
     public Length getPixelSizeY(UnitsLength unit) throws BigResult {
         Length l = asPixels().getPhysicalSizeY();
-        if (l == null || l.getUnit().equals(UnitsLength.PIXEL))
+        if (l == null)
             return null;
-        return unit == null ? l : new LengthI(l, unit);
+        try {
+            return unit == null ? l : new LengthI(l, unit);
+        } catch (BigResult b) {
+            throw b;
+        }
+        catch (Exception e) {
+            return null;
+        }
     }
 
     /**
@@ -316,9 +330,16 @@ public class PixelsData extends DataObject {
      */
     public Length getPixelSizeZ(UnitsLength unit) throws BigResult {
         Length l = asPixels().getPhysicalSizeZ();
-        if (l == null || l.getUnit().equals(UnitsLength.PIXEL))
+        if (l == null)
             return null;
-        return unit == null ? l : new LengthI(l, unit);
+        try {
+            return unit == null ? l : new LengthI(l, unit);
+        } catch (BigResult b) {
+            throw b;
+        }
+        catch (Exception e) {
+            return null;
+        }
     }
 
     /**
