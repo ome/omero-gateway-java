@@ -1,3 +1,8 @@
+5.6.1 (December 2019)
+---------------------
+
+- Catch all length conversion failures and return null (#26)
+
 5.6.0 (December 2019)
 ---------------------
 
