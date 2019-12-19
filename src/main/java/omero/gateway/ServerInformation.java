@@ -156,6 +156,7 @@ public class ServerInformation {
      * @param hostname
      *            See above
      */
+    @Deprecated
     public void setHostname(String hostname) {
         setHost(hostname);
     }

@@ -368,6 +368,7 @@ public class Gateway implements AutoCloseable {
      *
      * @return See above.
      */
+    @Deprecated
     public boolean joinSession() {
         try {
             isNetworkUp(false); // Force re-check to prevent hang
