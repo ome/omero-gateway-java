@@ -258,7 +258,14 @@ public class PixelsData extends DataObject {
         Length l = asPixels().getPhysicalSizeX();
         if (l == null)
             return null;
-        return unit == null ? l : new LengthI(l, unit);
+        try {
+            return unit == null ? l : new LengthI(l, unit);
+        } catch (BigResult b) {
+            throw b;
+        }
+        catch (Exception e) {
+            return null;
+        }
     }
 
     /**
@@ -288,7 +295,14 @@ public class PixelsData extends DataObject {
         Length l = asPixels().getPhysicalSizeY();
         if (l == null)
             return null;
-        return unit == null ? l : new LengthI(l, unit);
+        try {
+            return unit == null ? l : new LengthI(l, unit);
+        } catch (BigResult b) {
+            throw b;
+        }
+        catch (Exception e) {
+            return null;
+        }
     }
 
     /**
@@ -318,7 +332,14 @@ public class PixelsData extends DataObject {
         Length l = asPixels().getPhysicalSizeZ();
         if (l == null)
             return null;
-        return unit == null ? l : new LengthI(l, unit);
+        try {
+            return unit == null ? l : new LengthI(l, unit);
+        } catch (BigResult b) {
+            throw b;
+        }
+        catch (Exception e) {
+            return null;
+        }
     }
 
     /**
