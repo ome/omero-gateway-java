@@ -1,3 +1,8 @@
+5.6.2 (December 2019)
+---------------------
+
+- Bump omero-blitz version to 5.5.5
+
 5.6.1 (December 2019)
 ---------------------
 
