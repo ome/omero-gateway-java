@@ -115,14 +115,17 @@ public class ServerInformation {
                 // this is already a URI like wss://example.org
                 int port = this.uri.getPort();
                 this.uri = new URI(host);
-                if (port >= 0 && this.uri.getPort() < 0) {
+                if (this.uri.getPort() < 0) {
+                    if (port <= 0) {
+                        port = LoginCredentials.DefaultPort.valueOf(getProtocol().toUpperCase()).port;
+                    }
                     this.uri = new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(),
                             port, uri.getPath(), uri.getQuery(), uri.getFragment());
                 }
             }
             else {
                 int port = uri.getPort();
-                if (port < 0 && host.contains(":")) {
+                if (host.contains(":")) {
                     try {
                         String[] parts = host.split(":");
                         port = Integer.parseInt(parts[parts.length-1]);
