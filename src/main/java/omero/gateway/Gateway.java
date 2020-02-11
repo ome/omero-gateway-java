@@ -453,6 +453,24 @@ public class Gateway implements AutoCloseable {
     }
 
     /**
+     * Return the host
+     *
+     * @param user The user to get the host for
+     * @return See above
+     * @throws DSOutOfServiceException
+     *             If the connection is broken, or not logged in
+     */
+    public String getHost(ExperimenterData user)
+            throws DSOutOfServiceException {
+        Connector c = getConnector(new SecurityContext(user.getGroupId()),
+                false, false);
+        if (c == null) {
+            return null;
+        }
+        return login.getServer().getHost();
+    }
+
+    /**
      * Get the version of the server the Gateway is connected to
      * 
      * @return See above
