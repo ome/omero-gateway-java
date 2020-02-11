@@ -35,11 +35,25 @@ import omero.gateway.Gateway;
 import omero.gateway.SecurityContext;
 import omero.gateway.exception.DSAccessException;
 import omero.gateway.exception.DSOutOfServiceException;
+import omero.gateway.model.DataObject;
+import omero.gateway.model.ExperimenterData;
+import omero.gateway.model.DatasetData;
 import omero.gateway.model.ImageData;
 import omero.model.Fileset;
 import omero.model.FilesetEntry;
+import omero.model.IObject;
 import omero.model.OriginalFile;
 import omero.sys.ParametersI;
+import ome.formats.importer.ImportConfig;
+import ome.formats.importer.OMEROWrapper;
+import ome.formats.importer.ImportLibrary;
+import ome.formats.importer.ImportCandidates;
+import ome.formats.importer.ImportContainer;
+import ome.formats.importer.cli.ErrorHandler;
+import ome.formats.importer.cli.LoggingImportMonitor;
+
+import loci.formats.in.DefaultMetadataOptions;
+import loci.formats.in.MetadataLevel;
 
 import org.apache.commons.collections.CollectionUtils;
 
@@ -85,7 +99,10 @@ public class TransferFacilityHelper {
      *            The identifier of the image.
      * @return See above
      * @throws DSOutOfServiceException
+     *             If the connection is broken, or not logged in
      * @throws DSAccessException
+     *             If an error occurred while trying to retrieve data from OMERO
+     *             service.
      */
     List<File> downloadImage(SecurityContext context, String targetPath,
             long imageId) throws DSAccessException, DSOutOfServiceException {
@@ -203,6 +220,55 @@ public class TransferFacilityHelper {
         }
 
         return files;
+    }
+
+    /**
+     * Import the specified files into the given container if any.
+     * Returns the corresponding pixels Data object.
+     *
+     * @param context The security context.
+     * @param paths The paths to the file to import.
+     * @param object The container where to import the image.
+     * @return
+     * @throws DSOutOfServiceException
+     *             If the connection is broken, or not logged in
+     * @throws DSAccessException
+     *             If an error occurred while trying to retrieve data from OMERO
+     *             service.
+     */
+    Boolean uploadImagesDirect(SecurityContext ctx, List<String> paths, DataObject object)
+            throws DSAccessException, DSOutOfServiceException
+    {
+        String[] values = paths.toArray(new String[0]);
+        ExperimenterData user = gateway.getLoggedInUser();
+        String sessionKey = gateway.getSessionId(user);
+
+        ImportConfig config = new ImportConfig();
+        config.hostname.set(gateway.getHost(user));
+        config.sessionKey.set(sessionKey);
+
+        OMEROWrapper reader = new OMEROWrapper(config);
+
+        ImportLibrary library = null;
+        try {
+            library = new ImportLibrary(config.createStore(), reader);
+        } catch (Exception e) {
+            throw new DSAccessException("Cannot create an import store", e);
+        }
+        ErrorHandler error_handler = new ErrorHandler(config);
+
+        library.addObserver(new LoggingImportMonitor());
+        ImportCandidates candidates = new ImportCandidates(reader, values, error_handler);
+        if (object instanceof DatasetData) {
+            IObject dataset = browse.findIObject(ctx, "omero.model.Dataset", object.getId());
+            for (ImportContainer c : candidates.getContainers()) {
+                c.setTarget(dataset);
+            }
+        }
+
+        reader.setMetadataOptions(new DefaultMetadataOptions(MetadataLevel.ALL));
+
+        return library.importCandidates(config, candidates);
     }
 
     /**
