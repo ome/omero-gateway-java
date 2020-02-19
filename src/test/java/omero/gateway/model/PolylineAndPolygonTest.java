@@ -18,7 +18,7 @@
  *
  *------------------------------------------------------------------------------
  */
-package utests.gateway.model;
+package  omero.gateway.model;
 
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -32,9 +32,8 @@ import omero.model.PolygonI;
 import omero.model.Polyline;
 import omero.model.PolylineI;
 
+import org.testng.Assert;
 import org.testng.annotations.Test;
-
-import junit.framework.TestCase;
 
 
 /**
@@ -44,7 +43,8 @@ import junit.framework.TestCase;
  * <a href="mailto:j.burel@dundee.ac.uk">j.burel@dundee.ac.uk</a>
  * @since 5.1
  */
-public class PolylineAndPolygonTest extends TestCase {
+@Test(groups = "unit")
+public class PolylineAndPolygonTest {
 
     /** Returns a double array as a number attribute value. */
     private String toNumber(double number)
@@ -90,7 +90,7 @@ public class PolylineAndPolygonTest extends TestCase {
         Polyline shape = (Polyline) data.asIObject();
         String pointsAsString = shape.getPoints().getValue();
         //Check that the string no longer contains "points""
-        assertFalse(pointsAsString.contains("points"));
+        Assert.assertFalse(pointsAsString.contains("points"));
     }
 
     @Test
@@ -107,10 +107,10 @@ public class PolylineAndPolygonTest extends TestCase {
         String pointsAsString = shape.getPoints().getValue();
         //Check that the string no longer contains
         //"points", "points1", "points2" or "masks"
-        assertFalse(pointsAsString.contains("points"));
-        assertFalse(pointsAsString.contains("points1"));
-        assertFalse(pointsAsString.contains("points2"));
-        assertFalse(pointsAsString.contains("masks"));
+        Assert.assertFalse(pointsAsString.contains("points"));
+        Assert.assertFalse(pointsAsString.contains("points1"));
+        Assert.assertFalse(pointsAsString.contains("points2"));
+        Assert.assertFalse(pointsAsString.contains("masks"));
     }
 
     @Test
@@ -127,7 +127,7 @@ public class PolylineAndPolygonTest extends TestCase {
         String pointsAsString = shape.getPoints().getValue();
         //Check that the string no longer contains
         //"points"
-        assertFalse(pointsAsString.contains("points"));
+        Assert.assertFalse(pointsAsString.contains("points"));
     }
 
     @Test
@@ -144,7 +144,7 @@ public class PolylineAndPolygonTest extends TestCase {
         String pointsAsString = shape.getPoints().getValue();
         //Check that the string no longer contains
         //"points"
-        assertFalse(pointsAsString.contains("points"));
+        Assert.assertFalse(pointsAsString.contains("points"));
     }
 
     @Test
@@ -161,14 +161,14 @@ public class PolylineAndPolygonTest extends TestCase {
         String pointsAsString = shape.getPoints().getValue();
         //Check that the string no longer contains
         //"points"
-        assertFalse(pointsAsString.contains("points"));
+        Assert.assertFalse(pointsAsString.contains("points"));
         List<Point2D.Double> list = data.getPoints();
         Point2D.Double p, p1;
         for (int i = 0; i < n; i++) {
             p = points.get(i);
             p1 = list.get(i);
-            assertEquals(p.getX(), p1.getX());
-            assertEquals(p.getY(), p1.getY());
+            Assert.assertEquals(p.getX(), p1.getX());
+            Assert.assertEquals(p.getY(), p1.getY());
         }
     }
 
@@ -186,14 +186,14 @@ public class PolylineAndPolygonTest extends TestCase {
         String pointsAsString = shape.getPoints().getValue();
         //Check that the string no longer contains
         //"points"
-        assertFalse(pointsAsString.contains("points"));
+        Assert.assertFalse(pointsAsString.contains("points"));
         List<Point2D.Double> list = data.getPoints();
         Point2D.Double p, p1;
         for (int i = 0; i < n; i++) {
             p = points.get(i);
             p1 = list.get(i);
-            assertEquals(p.getX(), p1.getX());
-            assertEquals(p.getY(), p1.getY());
+            Assert.assertEquals(p.getX(), p1.getX());
+            Assert.assertEquals(p.getY(), p1.getY());
         }
     }
 
@@ -225,19 +225,19 @@ public class PolylineAndPolygonTest extends TestCase {
         for (int i = 0; i < n; i++) {
             p = points[i];
             p1 = list.get(i);
-            assertEquals(p.getX(), p1.getX());
-            assertEquals(p.getY(), p1.getY());
+            Assert.assertEquals(p.getX(), p1.getX());
+            Assert.assertEquals(p.getY(), p1.getY());
         }
         list = data.getPoints();
         for (int i = 0; i < n; i++) {
             p = points[i];
             p1 = list.get(i);
-            assertEquals(p.getX(), p1.getX());
-            assertEquals(p.getY(), p1.getY());
+            Assert.assertEquals(p.getX(), p1.getX());
+            Assert.assertEquals(p.getY(), p1.getY());
         }
         List<Integer> ml = data.getMaskPoints();
         for (int i = 0; i < n; i++) {
-            assertEquals(masks.get(i), ml.get(i));
+            Assert.assertEquals(masks.get(i), ml.get(i));
         }
     }
 
@@ -269,19 +269,19 @@ public class PolylineAndPolygonTest extends TestCase {
         for (int i = 0; i < n; i++) {
             p = points[i];
             p1 = list.get(i);
-            assertEquals(p.getX(), p1.getX());
-            assertEquals(p.getY(), p1.getY());
+            Assert.assertEquals(p.getX(), p1.getX());
+            Assert.assertEquals(p.getY(), p1.getY());
         }
         list = data.getPoints();
         for (int i = 0; i < n; i++) {
             p = points[i];
             p1 = list.get(i);
-            assertEquals(p.getX(), p1.getX());
-            assertEquals(p.getY(), p1.getY());
+            Assert.assertEquals(p.getX(), p1.getX());
+            Assert.assertEquals(p.getY(), p1.getY());
         }
         List<Integer> ml = data.getMaskPoints();
         for (int i = 0; i < n; i++) {
-            assertEquals(masks.get(i), ml.get(i));
+            Assert.assertEquals(masks.get(i), ml.get(i));
         }
     }
     
@@ -301,8 +301,8 @@ public class PolylineAndPolygonTest extends TestCase {
         for (int i = 0; i < n; i++) {
             p = points.get(i);
             p1 = list.get(i);
-            assertEquals(p.getX(), p1.getX());
-            assertEquals(p.getY(), p1.getY());
+            Assert.assertEquals(p.getX(), p1.getX());
+            Assert.assertEquals(p.getY(), p1.getY());
         }
     }
 
@@ -324,8 +324,8 @@ public class PolylineAndPolygonTest extends TestCase {
         for (int i = 0; i < n; i++) {
             p = points.get(i);
             p1 = list.get(i);
-            assertEquals(p.getX(), p1.getX());
-            assertEquals(p.getY(), p1.getY());
+            Assert.assertEquals(p.getX(), p1.getX());
+            Assert.assertEquals(p.getY(), p1.getY());
         }
     }
 }
