@@ -1,3 +1,14 @@
+5.6.3 (March 2020)
+------------------
+
+- Set default port for connecting to server via websockets
+  ([#28](https://github.com/ome/omero-gateway-java/pull/28)
+- Migrate unit tests and display their output instead of caching it
+  ([#31](https://github.com/ome/omero-gateway-java/pull/31)
+- Bump TestNG version to 6.14.2
+  ([#32](https://github.com/ome/omero-gateway-java/pull/32)
+- Bump omero-blitz version to 5.5.6
+
 5.6.2 (December 2019)
 ---------------------
 
