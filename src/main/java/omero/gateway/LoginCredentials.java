@@ -22,8 +22,6 @@ package omero.gateway;
 
 import java.util.List;
 
-import omero.IllegalArgumentException;
-
 import com.google.common.collect.ImmutableList;
 
 /**
