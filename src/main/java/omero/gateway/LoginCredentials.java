@@ -64,7 +64,7 @@ public class LoginCredentials {
     /** Default websocket ports (this might be moved into omero.constants
      * in future) **/
     enum DefaultPort {
-        WS(80), WSS(443);
+        WS(80), WSS(443), HTTP(80), HTTPS(443);
         final int port;
         DefaultPort(int port) {
             this.port = port;
