@@ -79,7 +79,7 @@ public class LoginCredentials {
         static DefaultPort fromProtocol(String protocol) throws IllegalArgumentException {
             String msg = protocol+" is not supported. Supported protocols: ";
             for (DefaultPort p : DefaultPort.values()) {
-                msg += p.name();
+                msg += p.name()+" ";
                 if (p.name().equals(protocol.toUpperCase()))
                     return p;
             }
