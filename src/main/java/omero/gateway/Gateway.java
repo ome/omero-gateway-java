@@ -24,6 +24,7 @@ package omero.gateway;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -1071,6 +1072,11 @@ public class Gateway implements AutoCloseable {
                 secureClient = new client(c.getServer().getHost());
         }
         secureClient.setAgent(c.getApplicationName());
+        try {
+            secureClient.setIP(InetAddress.getLocalHost().getHostAddress());
+        } catch (UnknownHostException uhe) {
+            // doesn't much matter
+        }
         ServiceFactoryPrx entryEncrypted = null;
         
         boolean connected = false;
