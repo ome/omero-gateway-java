@@ -20,11 +20,7 @@
  */
 package omero.gateway;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import omero.IllegalArgumentException;
 
 import com.google.common.collect.ImmutableList;
 
@@ -68,10 +64,26 @@ public class LoginCredentials {
     /** Default websocket ports (this might be moved into omero.constants
      * in future) **/
     enum DefaultPort {
-        WS(80), WSS(443);
+        WS(80), WSS(443), HTTP(80), HTTPS(443);
         final int port;
         DefaultPort(int port) {
             this.port = port;
+        }
+
+        /**
+         * Get the DefaultPort for the given protocol
+         * @param protocol The protocol
+         * @return The DefaultPort
+         * @throws IllegalArgumentException If not found
+         */
+        static DefaultPort fromProtocol(String protocol) throws IllegalArgumentException {
+            String msg = protocol+" is not supported. Supported protocols: ";
+            for (DefaultPort p : DefaultPort.values()) {
+                msg += p.name()+" ";
+                if (p.name().equals(protocol.toUpperCase()))
+                    return p;
+            }
+            throw new IllegalArgumentException(msg);
         }
     }
 
@@ -142,11 +154,7 @@ public class LoginCredentials {
                 server.setPort(omero.constants.GLACIER2PORT.value);
             }
             else if (server.getPort() < 0) {
-                try {
-                    server.setPort(DefaultPort.valueOf(server.getProtocol().toUpperCase()).port);
-                } catch (IllegalArgumentException e) {
-                    // neither ws nor wss
-                }
+                server.setPort(DefaultPort.fromProtocol(server.getProtocol()).port);
             }
         }
     }

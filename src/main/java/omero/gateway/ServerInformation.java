@@ -117,7 +117,7 @@ public class ServerInformation {
                 this.uri = new URI(host);
                 if (this.uri.getPort() < 0) {
                     if (port <= 0) {
-                        port = LoginCredentials.DefaultPort.valueOf(getProtocol().toUpperCase()).port;
+                        port = LoginCredentials.DefaultPort.fromProtocol(getProtocol()).port;
                     }
                     this.uri = new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(),
                             port, uri.getPath(), uri.getQuery(), uri.getFragment());
