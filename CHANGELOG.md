@@ -1,3 +1,10 @@
+5.6.4 (July 2020)
+-----------------
+
+- Improve error message ([#34](https://github.com/ome/omero-gateway-java/pull/34)
+- Note the client IP address when connecting to the server ([#36](https://github.com/ome/omero-gateway-java/pull/36)
+- Add missing license file ([#37](https://github.com/ome/omero-gateway-java/pull/37)
+
 5.6.3 (March 2020)
 ------------------
 
