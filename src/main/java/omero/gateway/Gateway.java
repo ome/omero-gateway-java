@@ -1,6 +1,6 @@
 /*
  *------------------------------------------------------------------------------
- *  Copyright (C) 2015-2019 University of Dundee. All rights reserved.
+ *  Copyright (C) 2015-2020 University of Dundee. All rights reserved.
  *
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -87,6 +87,7 @@ import omero.gateway.model.GroupData;
 import omero.gateway.util.PojoMapper;
 import Glacier2.CannotCreateSessionException;
 import Glacier2.PermissionDeniedException;
+import Ice.ConnectFailedException;
 import Ice.DNSException;
 import Ice.SocketException;
 
@@ -301,6 +302,9 @@ public class Gateway implements AutoCloseable {
             throw new DSOutOfServiceException("Login credentials not valid", e);
         } catch (ServerError e) {
             throw new DSOutOfServiceException(e.getMessage(), e);
+        } catch (ConnectFailedException e) {
+            throw new DSOutOfServiceException("Can't connect to "
+                    + c.getServer().getHost(), e);
         } catch (SocketException e) {
             throw new DSOutOfServiceException(e.getMessage(), e);
         } catch (DNSException e) {
