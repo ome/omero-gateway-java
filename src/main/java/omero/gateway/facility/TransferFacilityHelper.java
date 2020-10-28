@@ -52,7 +52,7 @@ import ome.formats.importer.ImportContainer;
 import ome.formats.importer.cli.ErrorHandler;
 import ome.formats.importer.cli.LoggingImportMonitor;
 
-import loci.formats.in.DefaultMetadataOptions;
+import loci.formats.in.DynamicMetadataOptions;
 import loci.formats.in.MetadataLevel;
 
 import org.apache.commons.collections.CollectionUtils;
