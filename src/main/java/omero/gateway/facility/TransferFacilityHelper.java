@@ -266,7 +266,7 @@ public class TransferFacilityHelper {
             }
         }
 
-        reader.setMetadataOptions(new DefaultMetadataOptions(MetadataLevel.ALL));
+        reader.setMetadataOptions(new DynamicMetadataOptions(MetadataLevel.ALL));
 
         return library.importCandidates(config, candidates);
     }
