@@ -1,8 +1,8 @@
+[![Actions Status](https://github.com/ome/omero-gateway-java/workflows/Gradle/badge.svg)](https://github.com/ome/omero-gateway-java/actions)
+
 # omero-gateway
 
 OMERO Java client library
-
-[![Build Status](https://travis-ci.org/ome/omero-gateway-java.png)](https://travis-ci.org/ome/omero-gateway-java)
 
 ## Usage
 
