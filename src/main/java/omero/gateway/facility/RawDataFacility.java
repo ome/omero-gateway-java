@@ -1,6 +1,6 @@
 /*
  *------------------------------------------------------------------------------
- *  Copyright (C) 2015-2017 University of Dundee. All rights reserved.
+ *  Copyright (C) 2015-2021 University of Dundee. All rights reserved.
  *
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -21,8 +21,10 @@
 package omero.gateway.facility;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
+import omero.api.ResolutionDescription;
 import omero.gateway.Gateway;
 import omero.gateway.SecurityContext;
 import omero.gateway.exception.DSAccessException;
@@ -160,17 +162,55 @@ public class RawDataFacility extends Facility implements AutoCloseable {
      */
     public Plane2D getPlane(SecurityContext ctx, PixelsData pixels, int z,
             int t, int c) throws DSOutOfServiceException, DSAccessException {
+        return getPlane(ctx, pixels, z, t, c, -1);
+    }
+
+    /**
+     * Extracts a 2D plane from the pixels set. Connection to the PixelsStore
+     * will be closed automatically.
+     *
+     * @param ctx
+     *            The security context.
+     * @param pixels
+     *            The {@link PixelsData} object to fetch the data from.
+     * @param z
+     *            The z-section at which data is to be fetched.
+     * @param t
+     *            The timepoint at which data is to be fetched.
+     * @param c
+     *            The channel at which data is to be fetched.
+     * @param resolutionLevel
+     *            A specific resolution level (optional), see also
+     *            getResolutionDescriptions()
+     * @return A plane 2D object that encapsulates the actual plane pixels.
+     * @throws DSOutOfServiceException
+     *             If the connection is broken, or not logged in
+     * @throws DSAccessException
+     *             If an error occurred while trying to retrieve data from OMERO
+     *             service.
+     */
+    public Plane2D getPlane(SecurityContext ctx, PixelsData pixels, int z,
+                            int t, int c, int resolutionLevel)
+            throws DSOutOfServiceException, DSAccessException {
         if (pixels == null)
             return null;
-        
+
         try {
-            return getDataSink(ctx, pixels, gateway).getPlane(z, t, c);
+            DataSink ds = getDataSink(ctx, pixels, gateway);
+            int oldResLevel = -1;
+            if (resolutionLevel >= 0)
+                oldResLevel = ds.setResolutionLevel(resolutionLevel);
+            Plane2D plane = ds.getPlane(z, t, c);
+            if (resolutionLevel >= 0)
+                ds.setResolutionLevel(oldResLevel);
+            return plane;
         } catch (Exception e) {
             handleException(this, e, "Couldn't get plane z=" + z + " t=" + t
                     + " c=" + c);
         }
         return null;
     }
+
 
     /**
      * Extracts a 2D tile from the pixels set
@@ -201,15 +241,76 @@ public class RawDataFacility extends Facility implements AutoCloseable {
     public Plane2D getTile(SecurityContext ctx, PixelsData pixels, int z,
             int t, int c, int x, int y, int w, int h)
             throws DataSourceException {
+        return getTile(ctx, pixels, z, t, c, x, y, w, h, -1);
+    }
+
+    /**
+     * Extracts a 2D tile from the pixels set
+     *
+     * @param ctx
+     *            The security context.
+     * @param pixels
+     *            The {@link PixelsData} object to fetch the data from.
+     * @param z
+     *            The z-section at which data is to be fetched.
+     * @param t
+     *            The timepoint at which data is to be fetched.
+     * @param c
+     *            The channel at which data is to be fetched.
+     * @param x
+     *            The x coordinate
+     * @param y
+     *            The y coordinate
+     * @param w
+     *            The width of the tile
+     * @param h
+     *            The height of the tile
+     * @param resolutionLevel
+     *            A specific resolution level (optional), see also
+     *            getResolutionDescriptions()
+     * @return A plane 2D object that encapsulates the actual tile pixels.
+     * @throws DataSourceException
+     *             If an error occurs while retrieving the plane data from the
+     *             pixels source.
+     */
+    public Plane2D getTile(SecurityContext ctx, PixelsData pixels, int z,
+                           int t, int c, int x, int y, int w, int h, int resolutionLevel)
+            throws DataSourceException {
         if (pixels == null)
             return null;
-        
+
         try {
-            return getDataSink(ctx, pixels, gateway).getTile(z, t, c, x, y, w,
-                    h);
+            DataSink ds = getDataSink(ctx, pixels, gateway);
+            int oldResLevel = -1;
+            if (resolutionLevel >= 0)
+                oldResLevel = ds.setResolutionLevel(resolutionLevel);
+            Plane2D tile = ds.getTile(z, t, c, x, y, w, h);
+            if (resolutionLevel >= 0)
+                ds.setResolutionLevel(oldResLevel);
+            return tile;
         } catch (DSOutOfServiceException e) {
             throw new DataSourceException("Can't initiate DataSink", e);
         }
+    }
+
+    /**
+     * Get the available resolution descriptions
+     * @param ctx The SecurityContext
+     * @param pixels The PixelsData object
+     * @return See above
+     * @throws DataSourceException If an error occurs while retrieving the data
+     */
+    public List<ResolutionDescription> getResolutionDescriptions(SecurityContext ctx, PixelsData pixels)
+            throws DataSourceException {
+        if (pixels == null)
+            return null;
+
+        try {
+            return getDataSink(ctx, pixels, gateway).getResolutionDescriptions();
+        } catch (DSOutOfServiceException e) {
+            throw new DataSourceException("Can't initiate DataSink", e);
+        }
+
     }
 
     /**
