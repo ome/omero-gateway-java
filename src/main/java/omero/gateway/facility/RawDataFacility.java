@@ -142,32 +142,6 @@ public class RawDataFacility extends Facility implements AutoCloseable {
     /**
      * Extracts a 2D plane from the pixels set. Connection to the PixelsStore
      * will be closed automatically.
-     * 
-     * @param ctx
-     *            The security context.
-     * @param pixels
-     *            The {@link PixelsData} object to fetch the data from.
-     * @param z
-     *            The z-section at which data is to be fetched.
-     * @param t
-     *            The timepoint at which data is to be fetched.
-     * @param c
-     *            The channel at which data is to be fetched.
-     * @return A plane 2D object that encapsulates the actual plane pixels.
-     * @throws DSOutOfServiceException
-     *             If the connection is broken, or not logged in
-     * @throws DSAccessException
-     *             If an error occurred while trying to retrieve data from OMERO
-     *             service.
-     */
-    public Plane2D getPlane(SecurityContext ctx, PixelsData pixels, int z,
-            int t, int c) throws DSOutOfServiceException, DSAccessException {
-        return getPlane(ctx, pixels, z, t, c, -1);
-    }
-
-    /**
-     * Extracts a 2D plane from the pixels set. Connection to the PixelsStore
-     * will be closed automatically.
      *
      * @param ctx
      *            The security context.
@@ -179,9 +153,6 @@ public class RawDataFacility extends Facility implements AutoCloseable {
      *            The timepoint at which data is to be fetched.
      * @param c
      *            The channel at which data is to be fetched.
-     * @param resolutionLevel
-     *            A specific resolution level (optional), see also
-     *            getResolutionDescriptions()
      * @return A plane 2D object that encapsulates the actual plane pixels.
      * @throws DSOutOfServiceException
      *             If the connection is broken, or not logged in
@@ -190,19 +161,14 @@ public class RawDataFacility extends Facility implements AutoCloseable {
      *             service.
      */
     public Plane2D getPlane(SecurityContext ctx, PixelsData pixels, int z,
-                            int t, int c, int resolutionLevel)
+                            int t, int c)
             throws DSOutOfServiceException, DSAccessException {
         if (pixels == null)
             return null;
 
         try {
             DataSink ds = getDataSink(ctx, pixels, gateway);
-            int oldResLevel = -1;
-            if (resolutionLevel >= 0)
-                oldResLevel = ds.setResolutionLevel(resolutionLevel);
             Plane2D plane = ds.getPlane(z, t, c);
-            if (resolutionLevel >= 0)
-                ds.setResolutionLevel(oldResLevel);
             return plane;
         } catch (Exception e) {
             handleException(this, e, "Couldn't get plane z=" + z + " t=" + t
