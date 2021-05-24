@@ -51,8 +51,7 @@ import omero.model.Plate;
 import omero.model.PlateI;
 import omero.model.Roi;
 import omero.model.RoiI;
-import omero.model.WellSample;
-import omero.model.WellSampleI;
+import omero.model.WellI;
 
 /**
  * Helper class which deals with the various conversions from omero.grid objects
@@ -258,14 +257,13 @@ public class TablesFacilityHelper {
                 header[i].setType(String.class);
             }
             if (col instanceof WellColumn) {
-                WellSampleData[] rowData = new WellSampleData[nRows];
+                WellData[] rowData = new WellData[nRows];
                 long tableData[] = ((WellColumn) col).values;
                 for (int j = 0; j < nRows; j++) {
-                    WellSample p = new WellSampleI(tableData[j], false);
-                    rowData[j] = new WellSampleData(p);
+                    rowData[j] = new WellData(new WellI(tableData[j], false));
                 }
                 dataArray[i] = rowData;
-                header[i].setType(WellSampleData.class);
+                header[i].setType(WellData.class);
             }
         }
     }
