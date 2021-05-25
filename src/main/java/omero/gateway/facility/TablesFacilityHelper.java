@@ -27,7 +27,6 @@ import omero.gateway.model.ROIData;
 import omero.gateway.model.TableData;
 import omero.gateway.model.TableDataColumn;
 import omero.gateway.model.WellData;
-import omero.gateway.model.WellSampleData;
 import omero.grid.BoolColumn;
 import omero.grid.Column;
 import omero.grid.Data;
@@ -409,10 +408,10 @@ public class TablesFacilityHelper {
             c = new StringColumn(header, description, Short.MAX_VALUE, d);
         }
 
-        else if (type.equals(WellSampleData.class)) {
+        else if (type.equals(WellData.class)) {
             long[] d = new long[data.length];
             for (int i = 0; i < data.length; i++)
-                d[i] = ((WellSampleData) data[i]).getId();
+                d[i] = ((WellData) data[i]).getId();
             c = new WellColumn(header, description, d);
         }
 
