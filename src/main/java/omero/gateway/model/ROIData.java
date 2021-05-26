@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.TreeMap;
 
 import omero.UnloadedCollectionException;
+import omero.UnloadedEntityException;
 import omero.model.Ellipse;
 import omero.model.FolderRoiLink;
 import omero.model.Image;
@@ -73,7 +74,13 @@ public class ROIData
         roiShapes = new TreeMap<ROICoordinate, List<ShapeData>>
         (new ROICoordinate());
         Roi roi = (Roi) asIObject();
-        List<Shape> shapes = roi.copyShapes();
+        List<Shape> shapes = null;
+        try {
+            shapes = roi.copyShapes();
+        } catch(UnloadedEntityException e) {
+            // shapes have not been loaded.
+        }
+
         if (shapes == null) return;
         Iterator<Shape> i = shapes.iterator();
         ShapeData s;
