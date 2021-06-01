@@ -1099,17 +1099,25 @@ public class Gateway implements AutoCloseable {
             }
         }
         if (!connected) {
-            try {
-                if (args != null) {
+            if (args != null) {
+                try {
                     entryEncrypted = secureClient.createSession();
-                } else {
+                } catch(Exception e) {
+                    log.warn(this, new LogMessage(
+                            "Could not login with command line arguments.", e));
                     entryEncrypted = secureClient.createSession(c.getUser()
                             .getUsername(), c.getUser().getPassword());
                 }
-            } catch (Exception e1) {
-                // close the session again before passing on the exception
-                secureClient.closeSession();
-                throw e1;
+            }
+            if (entryEncrypted == null) {
+                try {
+                    entryEncrypted = secureClient.createSession(c.getUser()
+                            .getUsername(), c.getUser().getPassword());
+                } catch (Exception e1) {
+                    // close the session again before passing on the exception
+                    secureClient.closeSession();
+                    throw e1;
+                }
             }
         }
 
