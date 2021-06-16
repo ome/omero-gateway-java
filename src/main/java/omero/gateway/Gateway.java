@@ -1,6 +1,6 @@
 /*
  *------------------------------------------------------------------------------
- *  Copyright (C) 2015-2020 University of Dundee. All rights reserved.
+ *  Copyright (C) 2015-2021 University of Dundee. All rights reserved.
  *
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -1099,17 +1099,23 @@ public class Gateway implements AutoCloseable {
             }
         }
         if (!connected) {
-            try {
-                if (args != null) {
+            if (args != null) {
+                try {
                     entryEncrypted = secureClient.createSession();
-                } else {
+                } catch(Exception e) {
+                    log.warn(this, new LogMessage(
+                            "Could not login with command line arguments.", e));
+                }
+            }
+            if (entryEncrypted == null) {
+                try {
                     entryEncrypted = secureClient.createSession(c.getUser()
                             .getUsername(), c.getUser().getPassword());
+                } catch (Exception e1) {
+                    // close the session again before passing on the exception
+                    secureClient.closeSession();
+                    throw e1;
                 }
-            } catch (Exception e1) {
-                // close the session again before passing on the exception
-                secureClient.closeSession();
-                throw e1;
             }
         }
 
