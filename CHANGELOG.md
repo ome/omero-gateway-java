@@ -1,3 +1,8 @@
+5.6.6 (June 2021)
+-----------------
+
+- Fallback if args login doesn't work ([#53](https://github.com/ome/omero-gateway-java/pull/53))
+
 5.6.5 (September 2020)
 ----------------------
 
