@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 University of Dundee & Open Microscopy Environment.
+ * Copyright (C) 2017-2021 University of Dundee & Open Microscopy Environment.
  * All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,6 +19,7 @@
 package omero.gateway.facility;
 
 import omero.IllegalArgumentException;
+import omero.gateway.SecurityContext;
 import omero.gateway.model.FileAnnotationData;
 import omero.gateway.model.ImageData;
 import omero.gateway.model.MaskData;
@@ -52,6 +53,8 @@ import omero.model.Roi;
 import omero.model.RoiI;
 import omero.model.WellI;
 
+import java.util.concurrent.ExecutionException;
+
 /**
  * Helper class which deals with the various conversions from omero.grid objects
  * into plain Java, respectively gateway.model objects
@@ -75,13 +78,17 @@ public class TablesFacilityHelper {
 
     /** Reference to the TablesFacility */
     private TablesFacility fac;
-    
+
+    /** Reference to the current SecurityContext */
+    private SecurityContext ctx;
+
     /**
      * Create a new instance
      * @param fac Reference to the TablesFacility
      */
-    TablesFacilityHelper(TablesFacility fac) {
+    TablesFacilityHelper(TablesFacility fac, SecurityContext ctx) {
         this.fac = fac;
+        this.ctx = ctx;
     }
 
     /**
@@ -133,6 +140,14 @@ public class TablesFacilityHelper {
 
         dataArray = new Object[nCols][nRows];
 
+        BrowseFacility b = null;
+        try {
+            b = fac.gateway.getFacility(BrowseFacility.class);
+        } catch (ExecutionException e) {
+            fac.logWarn(this,
+                    "Can't get reference to BrowseFacility. Objects might be unloaded.", e);
+        }
+
         for (int i = 0; i < data.columns.length; i++) {
             Column col = data.columns[i];
             if (col instanceof BoolColumn) {
@@ -170,6 +185,13 @@ public class TablesFacilityHelper {
                 for (int j = 0; j < nRows; j++) {
                     FileAnnotation f = new FileAnnotationI(tableData[j], false);
                     rowData[j] = new FileAnnotationData(f);
+                    if (b != null) {
+                        try {
+                            rowData[j] = new FileAnnotationData((FileAnnotation) b.findIObject(ctx, f));
+                        } catch (Exception e) {
+                            fac.logWarn(this,"Can't load object.", e);
+                        }
+                    }
                 }
                 dataArray[i] = rowData;
                 header[i].setType(FileAnnotationData.class);
@@ -193,6 +215,13 @@ public class TablesFacilityHelper {
                 for (int j = 0; j < nRows; j++) {
                     Image im = new ImageI(tableData[j], false);
                     rowData[j] = new ImageData(im);
+                    if (b != null) {
+                        try {
+                            rowData[j] = new ImageData((Image) b.findIObject(ctx, im));
+                        } catch (Exception e) {
+                            fac.logWarn(this,"Can't load object.", e);
+                        }
+                    }
                 }
                 dataArray[i] = rowData;
                 header[i].setType(ImageData.class);
@@ -237,6 +266,13 @@ public class TablesFacilityHelper {
                 for (int j = 0; j < nRows; j++) {
                     Plate p = new PlateI(tableData[j], false);
                     rowData[j] = new PlateData(p);
+                    if (b != null) {
+                        try {
+                            rowData[j] = new PlateData((Plate) b.findIObject(ctx, p));
+                        } catch (Exception e) {
+                            fac.logWarn(this,"Can't load object.", e);
+                        }
+                    }
                 }
                 dataArray[i] = rowData;
                 header[i].setType(PlateData.class);
@@ -247,6 +283,13 @@ public class TablesFacilityHelper {
                 for (int j = 0; j < nRows; j++) {
                     Roi p = new RoiI(tableData[j], false);
                     rowData[j] = new ROIData(p);
+                    if (b != null) {
+                        try {
+                            rowData[j] = new ROIData((Roi) b.findIObject(ctx, p));
+                        } catch (Exception e) {
+                            fac.logWarn(this,"Can't load object.", e);
+                        }
+                    }
                 }
                 dataArray[i] = rowData;
                 header[i].setType(ROIData.class);
@@ -259,7 +302,15 @@ public class TablesFacilityHelper {
                 WellData[] rowData = new WellData[nRows];
                 long tableData[] = ((WellColumn) col).values;
                 for (int j = 0; j < nRows; j++) {
-                    rowData[j] = new WellData(new WellI(tableData[j], false));
+                    WellI p = new WellI(tableData[j], false);
+                    rowData[j] = new WellData(p);
+                    if (b != null) {
+                        try {
+                            rowData[j] = new WellData((WellI) b.findIObject(ctx, p));
+                        } catch (Exception e) {
+                            fac.logWarn(this,"Can't load object.", e);
+                        }
+                    }
                 }
                 dataArray[i] = rowData;
                 header[i].setType(WellData.class);
