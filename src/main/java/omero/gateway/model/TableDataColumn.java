@@ -96,7 +96,7 @@ public class TableDataColumn {
                 || type.equals(Long.class) || type.equals(Long[].class)
                 || type.equals(MaskData.class) || type.equals(PlateData.class)
                 || type.equals(ROIData.class) || type.equals(String.class) || type
-                    .equals(WellSampleData.class))) {
+                    .equals(WellData.class))) {
             throw new IllegalArgumentException(type.getSimpleName()
                     + " class is not supported.");
         }

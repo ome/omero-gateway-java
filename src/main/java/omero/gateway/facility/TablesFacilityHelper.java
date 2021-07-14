@@ -27,7 +27,6 @@ import omero.gateway.model.ROIData;
 import omero.gateway.model.TableData;
 import omero.gateway.model.TableDataColumn;
 import omero.gateway.model.WellData;
-import omero.gateway.model.WellSampleData;
 import omero.grid.BoolColumn;
 import omero.grid.Column;
 import omero.grid.Data;
@@ -51,8 +50,7 @@ import omero.model.Plate;
 import omero.model.PlateI;
 import omero.model.Roi;
 import omero.model.RoiI;
-import omero.model.WellSample;
-import omero.model.WellSampleI;
+import omero.model.WellI;
 
 /**
  * Helper class which deals with the various conversions from omero.grid objects
@@ -258,14 +256,13 @@ public class TablesFacilityHelper {
                 header[i].setType(String.class);
             }
             if (col instanceof WellColumn) {
-                WellSampleData[] rowData = new WellSampleData[nRows];
+                WellData[] rowData = new WellData[nRows];
                 long tableData[] = ((WellColumn) col).values;
                 for (int j = 0; j < nRows; j++) {
-                    WellSample p = new WellSampleI(tableData[j], false);
-                    rowData[j] = new WellSampleData(p);
+                    rowData[j] = new WellData(new WellI(tableData[j], false));
                 }
                 dataArray[i] = rowData;
-                header[i].setType(WellSampleData.class);
+                header[i].setType(WellData.class);
             }
         }
     }
@@ -411,10 +408,10 @@ public class TablesFacilityHelper {
             c = new StringColumn(header, description, Short.MAX_VALUE, d);
         }
 
-        else if (type.equals(WellSampleData.class)) {
+        else if (type.equals(WellData.class)) {
             long[] d = new long[data.length];
             for (int i = 0; i < data.length; i++)
-                d[i] = ((WellSampleData) data[i]).getId();
+                d[i] = ((WellData) data[i]).getId();
             c = new WellColumn(header, description, d);
         }
 
