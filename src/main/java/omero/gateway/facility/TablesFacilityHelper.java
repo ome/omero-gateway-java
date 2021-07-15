@@ -255,6 +255,14 @@ public class TablesFacilityHelper {
                             mc.h[j], mc.bytes[j]);
                     md.setZ(mc.theZ[j]);
                     md.setT(mc.theT[j]);
+                    if ( b != null && mc.imageId[j] >= 0) {
+                        try {
+                            md.setImage(new ImageData((Image) b.findIObject(ctx,
+                                    new ImageI(mc.imageId[j], false))));
+                        } catch (Exception e) {
+                            fac.logWarn(this,"Can't load object.", e);
+                        }
+                    }
                     rowData[j] = md;
                 }
                 dataArray[i] = rowData;

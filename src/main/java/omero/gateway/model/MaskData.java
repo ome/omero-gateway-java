@@ -1,6 +1,6 @@
 /*
  *------------------------------------------------------------------------------
- * Copyright (C) 2006-2018 University of Dundee. All rights reserved.
+ * Copyright (C) 2006-2021 University of Dundee. All rights reserved.
  *
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,6 @@
 package omero.gateway.model;
 
 import java.awt.image.BufferedImage;
-import java.util.Arrays;
 import java.awt.Color;
 
 import omero.RDouble;
@@ -45,6 +44,9 @@ import omero.model.Shape;
 public class MaskData
     extends ShapeData
 {
+
+    /** Reference to the image **/
+    ImageData image;
 
     /**
      * Creates a new instance.
@@ -235,7 +237,7 @@ public class MaskData
     public void setMask(byte[] mask)
     {
         Mask shape = (Mask) asIObject();
-        shape.setBytes(mask);	
+        shape.setBytes(mask);
         setDirty(true);
     }
 
@@ -428,8 +430,23 @@ public class MaskData
         }
         setMask(data);
     }
-    
-    
+
+    /**
+     * Get the image this masks belongs too
+     * @return See above.
+     */
+    public ImageData getImage() {
+        return image;
+    }
+
+    /**
+     * Set the image this masks belongs too
+     * @param image The image
+     */
+    public void setImage(ImageData image) {
+        this.image = image;
+    }
+
     @Override
     public String toString() {
         if (getWidth() > 50 || getHeight() > 50) 
