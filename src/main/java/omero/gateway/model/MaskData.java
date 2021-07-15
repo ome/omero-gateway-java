@@ -46,7 +46,7 @@ public class MaskData
 {
 
     /** Reference to the image **/
-    ImageData image;
+    private ImageData image;
 
     /**
      * Creates a new instance.

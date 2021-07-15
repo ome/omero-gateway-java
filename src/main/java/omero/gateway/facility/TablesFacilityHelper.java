@@ -20,7 +20,6 @@ package omero.gateway.facility;
 
 import omero.IllegalArgumentException;
 import omero.gateway.SecurityContext;
-import omero.gateway.model.FileAnnotationData;
 import omero.gateway.model.ImageData;
 import omero.gateway.model.MaskData;
 import omero.gateway.model.PlateData;
@@ -43,10 +42,10 @@ import omero.grid.PlateColumn;
 import omero.grid.RoiColumn;
 import omero.grid.StringColumn;
 import omero.grid.WellColumn;
-import omero.model.FileAnnotation;
-import omero.model.FileAnnotationI;
 import omero.model.Image;
 import omero.model.ImageI;
+import omero.model.OriginalFile;
+import omero.model.OriginalFileI;
 import omero.model.Plate;
 import omero.model.PlateI;
 import omero.model.Roi;
@@ -141,11 +140,13 @@ public class TablesFacilityHelper {
         dataArray = new Object[nCols][nRows];
 
         BrowseFacility b = null;
+        ROIFacility r = null;
         try {
             b = fac.gateway.getFacility(BrowseFacility.class);
+            r = fac.gateway.getFacility(ROIFacility.class);
         } catch (ExecutionException e) {
             fac.logWarn(this,
-                    "Can't get reference to BrowseFacility. Objects might be unloaded.", e);
+                    "Can't get references to Facilities. Objects might be unloaded.", e);
         }
 
         for (int i = 0; i < data.columns.length; i++) {
@@ -180,21 +181,20 @@ public class TablesFacilityHelper {
                 header[i].setType(Double.class);
             }
             if (col instanceof FileColumn) {
-                FileAnnotationData[] rowData = new FileAnnotationData[nRows];
+                OriginalFile[] rowData = new OriginalFile[nRows];
                 long tableData[] = ((FileColumn) col).values;
                 for (int j = 0; j < nRows; j++) {
-                    FileAnnotation f = new FileAnnotationI(tableData[j], false);
-                    rowData[j] = new FileAnnotationData(f);
+                    rowData[j] = new OriginalFileI(tableData[j], false);
                     if (b != null) {
                         try {
-                            rowData[j] = new FileAnnotationData((FileAnnotation) b.findIObject(ctx, f));
+                            rowData[j] = (OriginalFile) b.findIObject(ctx, new OriginalFileI(tableData[j], false));
                         } catch (Exception e) {
                             fac.logWarn(this,"Can't load object.", e);
                         }
                     }
                 }
                 dataArray[i] = rowData;
-                header[i].setType(FileAnnotationData.class);
+                header[i].setType(OriginalFile.class);
             }
             if (col instanceof FloatArrayColumn) {
                 Float[][] rowData = new Float[nRows][];
@@ -226,6 +226,24 @@ public class TablesFacilityHelper {
                 dataArray[i] = rowData;
                 header[i].setType(ImageData.class);
             }
+            // Doesn't work yet see https://github.com/ome/omero-server/issues/129
+//            if (col instanceof DatasetColumn) {
+//                DatasetData[] rowData = new DatasetData[nRows];
+//                long tableData[] = ((DatasetColumn) col).values;
+//                for (int j = 0; j < nRows; j++) {
+//                    Dataset d = new DatasetI(tableData[j], false);
+//                    rowData[j] = new DatasetData(d);
+//                    if (b != null) {
+//                        try {
+//                            rowData[j] = new DatasetData((Dataset) b.findIObject(ctx, d));
+//                        } catch (Exception e) {
+//                            fac.logWarn(this,"Can't load object.", e);
+//                        }
+//                    }
+//                }
+//                dataArray[i] = rowData;
+//                header[i].setType(DatasetData.class);
+//            }
             if (col instanceof LongArrayColumn) {
                 Long[][] rowData = new Long[nRows][];
                 long tableData[][] = ((LongArrayColumn) col).values;
@@ -251,11 +269,17 @@ public class TablesFacilityHelper {
                 MaskColumn mc = ((MaskColumn) col);
                 MaskData[] rowData = new MaskData[nRows];
                 for (int j = 0; j < nRows; j++) {
-                    MaskData md = new MaskData(mc.x[j], mc.y[j], mc.w[j],
-                            mc.h[j], mc.bytes[j]);
-                    md.setZ(mc.theZ[j]);
-                    md.setT(mc.theT[j]);
-                    if ( b != null && mc.imageId[j] >= 0) {
+                    double x = j < mc.x.length ? mc.x[j] : -1;
+                    double y = j < mc.y.length ? mc.y[j] : -1;
+                    double w = j < mc.w.length ? mc.w[j] : -1;
+                    double h = j < mc.h.length ? mc.h[j] : -1;
+                    byte[] d = j < mc.bytes.length ? mc.bytes[j] : new byte[0];
+                    MaskData md = new MaskData(x, y, w, h, d);
+                    if (j < mc.theZ.length)
+                        md.setZ(mc.theZ[j]);
+                    if (j < mc.theT.length)
+                        md.setT(mc.theT[j]);
+                    if ( b != null && j < mc.imageId.length && mc.imageId[j] >= 0) {
                         try {
                             md.setImage(new ImageData((Image) b.findIObject(ctx,
                                     new ImageI(mc.imageId[j], false))));
@@ -291,9 +315,9 @@ public class TablesFacilityHelper {
                 for (int j = 0; j < nRows; j++) {
                     Roi p = new RoiI(tableData[j], false);
                     rowData[j] = new ROIData(p);
-                    if (b != null) {
+                    if (r != null) {
                         try {
-                            rowData[j] = new ROIData((Roi) b.findIObject(ctx, p));
+                            rowData[j] = r.loadROI(ctx, tableData[j]).getROIs().iterator().next();
                         } catch (Exception e) {
                             fac.logWarn(this,"Can't load object.", e);
                         }
@@ -371,10 +395,10 @@ public class TablesFacilityHelper {
             c = new DoubleColumn(header, description, d);
         }
 
-        else if (type.equals(FileAnnotationData.class)) {
+        else if (type.equals(OriginalFile.class)) {
             long[] d = new long[data.length];
             for (int i = 0; i < data.length; i++)
-                d[i] = ((FileAnnotationData) data[i]).getFileID();
+                d[i] = ((OriginalFile) data[i]).getId().getValue();
             c = new FileColumn(header, description, d);
         }
 
@@ -432,7 +456,10 @@ public class TablesFacilityHelper {
 
             for (int i = 0; i < data.length; i++) {
                 MaskData md = (MaskData) data[i];
-                // TODO: Where get the imageId from!?
+                if (md.getImage() != null)
+                    imageId[i] = md.getImage().getId();
+                else
+                    imageId[i] = -1;
                 theZ[i] = md.getZ();
                 theT[i] = md.getT();
                 x[i] = md.getX();
@@ -473,6 +500,14 @@ public class TablesFacilityHelper {
                 d[i] = ((WellData) data[i]).getId();
             c = new WellColumn(header, description, d);
         }
+
+        // Doesn't work yet see https://github.com/ome/omero-server/issues/129
+//        else if (type.equals(DatasetData.class)) {
+//            long[] d = new long[data.length];
+//            for (int i = 0; i < data.length; i++)
+//                d[i] = ((DatasetData) data[i]).getId();
+//            c = new DatasetColumn(header, description, d);
+//        }
 
         else if (type.equals(Object.class)) {
             fac.logWarn(this, "No concrete type specified for column '"
@@ -588,15 +623,15 @@ public class TablesFacilityHelper {
                 }
                 if (col instanceof FileColumn) {
                     if (!data.getColumns()[c].getType().equals(
-                            FileAnnotationData.class))
+                            OriginalFile.class))
                         throw new IllegalArgumentException(
-                                "FileAnnotationData type expected for column "
+                                "OriginalFile type expected for column "
                                         + c
                                         + ", but is "
                                         + data.getColumns()[c].getType()
                                                 .getSimpleName() + " !");
-                    ((FileColumn) col).values[r] = ((FileAnnotationData) data
-                            .getData()[c][r]).getFileID();
+                    ((FileColumn) col).values[r] = ((OriginalFile) data
+                            .getData()[c][r]).getId().getValue();
                 }
                 if (col instanceof FloatArrayColumn) {
                     if (!data.getColumns()[c].getType().equals(Float[].class))

@@ -20,6 +20,7 @@ package omero.gateway.model;
 
 import omero.IllegalArgumentException;
 
+import omero.model.OriginalFile;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -91,7 +92,7 @@ public class TableDataColumn {
         }
         if (!(type.equals(Object.class) || type.equals(Boolean.class)
                 || type.equals(Double.class) || type.equals(Double[].class)
-                || type.equals(FileAnnotationData.class)
+                || type.equals(OriginalFile.class) // || type.equals(DatasetData.class)
                 || type.equals(Float[].class) || type.equals(ImageData.class)
                 || type.equals(Long.class) || type.equals(Long[].class)
                 || type.equals(MaskData.class) || type.equals(PlateData.class)
