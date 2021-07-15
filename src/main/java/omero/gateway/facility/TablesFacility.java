@@ -583,7 +583,10 @@ public class TablesFacility extends Facility {
      * @throws DSAccessException
      *             If an error occurred while trying to retrieve data from OMERO
      *             service.
+     *
+     * @deprecated This method is not reliable and might be removed/replaced in future.
      */
+    @Deprecated
     public void updateTable(SecurityContext ctx, TableData data)
             throws DSOutOfServiceException, DSAccessException {
         TablePrx table = null;
