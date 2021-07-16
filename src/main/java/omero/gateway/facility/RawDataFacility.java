@@ -134,7 +134,7 @@ public class RawDataFacility extends Facility implements AutoCloseable {
             return getDataSink(ctx, pixels, gateway).getHistogram(channels,
                     binCount, globalRange, plane);
         } catch (Exception e) {
-            handleException(this, e, "Couldn't get histogram data.");
+            handleException(this, e, "Can't initiate DataSink to get histogram data.");
         }
         return null;
     }
@@ -171,7 +171,7 @@ public class RawDataFacility extends Facility implements AutoCloseable {
             Plane2D plane = ds.getPlane(z, t, c);
             return plane;
         } catch (Exception e) {
-            handleException(this, e, "Couldn't get plane z=" + z + " t=" + t
+            handleException(this, e, "Can't initiate DataSink for plane z=" + z + " t=" + t
                     + " c=" + c);
         }
         return null;
