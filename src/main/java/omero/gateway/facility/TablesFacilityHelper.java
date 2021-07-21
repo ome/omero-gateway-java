@@ -20,6 +20,7 @@ package omero.gateway.facility;
 
 import omero.IllegalArgumentException;
 import omero.gateway.SecurityContext;
+import omero.gateway.model.FileAnnotationData;
 import omero.gateway.model.ImageData;
 import omero.gateway.model.MaskData;
 import omero.gateway.model.PlateData;
@@ -42,6 +43,8 @@ import omero.grid.PlateColumn;
 import omero.grid.RoiColumn;
 import omero.grid.StringColumn;
 import omero.grid.WellColumn;
+import omero.model.FileAnnotation;
+import omero.model.FileAnnotationI;
 import omero.model.Image;
 import omero.model.ImageI;
 import omero.model.OriginalFile;
@@ -181,20 +184,29 @@ public class TablesFacilityHelper {
                 header[i].setType(Double.class);
             }
             if (col instanceof FileColumn) {
-                OriginalFile[] rowData = new OriginalFile[nRows];
+                FileAnnotationData[] rowData = new FileAnnotationData[nRows];
+                // TODO: FileAnnotationData needs to be replaced with OriginalFile in future!
+                //OriginalFile[] rowData = new OriginalFile[nRows];
                 long tableData[] = ((FileColumn) col).values;
                 for (int j = 0; j < nRows; j++) {
-                    rowData[j] = new OriginalFileI(tableData[j], false);
+                    FileAnnotation fa = new FileAnnotationI();
+                    fa.setFile(new OriginalFileI(tableData[j], false));
+                    rowData[j] = new FileAnnotationData(fa);
+                    //rowData[j] = new OriginalFileI(tableData[j], false);
                     if (b != null) {
                         try {
-                            rowData[j] = (OriginalFile) b.findIObject(ctx, new OriginalFileI(tableData[j], false));
+                            fa = new FileAnnotationI();
+                            fa.setFile(new OriginalFileI(tableData[j], false));
+                            rowData[j] = new FileAnnotationData(fa);
+                            //rowData[j] = (OriginalFile) b.findIObject(ctx, new OriginalFileI(tableData[j], false));
                         } catch (Exception e) {
                             fac.logWarn(this,"Can't load object.", e);
                         }
                     }
                 }
                 dataArray[i] = rowData;
-                header[i].setType(OriginalFile.class);
+                header[i].setType(FileAnnotationData.class);
+                //header[i].setType(OriginalFile.class);
             }
             if (col instanceof FloatArrayColumn) {
                 Float[][] rowData = new Float[nRows][];
@@ -400,6 +412,15 @@ public class TablesFacilityHelper {
             for (int i = 0; i < data.length; i++)
                 d[i] = ((OriginalFile) data[i]).getId().getValue();
             c = new FileColumn(header, description, d);
+        }
+
+        else if (type.equals(FileAnnotationData.class)) {
+            long[] d = new long[data.length];
+            for (int i = 0; i < data.length; i++)
+                d[i] = ((FileAnnotationData) data[i]).getFileID();
+            c = new FileColumn(header, description, d);
+            fac.logWarn(this, "Support for FileAnnotationData is deprecated." +
+                    " Use OriginalFile instead.", null);
         }
 
         else if (type.equals(Float[].class)) {
@@ -622,16 +643,22 @@ public class TablesFacilityHelper {
                     ((DoubleColumn) col).values[r] = (Double) data.getData()[c][r];
                 }
                 if (col instanceof FileColumn) {
-                    if (!data.getColumns()[c].getType().equals(
-                            OriginalFile.class))
+                    if (data.getColumns()[c].getType().equals(OriginalFile.class)) {
+                        ((FileColumn) col).values[r] = ((OriginalFile) data
+                                .getData()[c][r]).getId().getValue();
+                    }
+                    else if (data.getColumns()[c].getType().equals(FileAnnotationData.class)) {
+                        ((FileColumn) col).values[r] = ((FileAnnotationData) data
+                                .getData()[c][r]).getFileID();
+                    }
+                    else {
                         throw new IllegalArgumentException(
-                                "OriginalFile type expected for column "
+                                "OriginalFile or FileAnnotationData type expected for column "
                                         + c
                                         + ", but is "
                                         + data.getColumns()[c].getType()
-                                                .getSimpleName() + " !");
-                    ((FileColumn) col).values[r] = ((OriginalFile) data
-                            .getData()[c][r]).getId().getValue();
+                                        .getSimpleName() + " !");
+                    }
                 }
                 if (col instanceof FloatArrayColumn) {
                     if (!data.getColumns()[c].getType().equals(Float[].class))
