@@ -196,7 +196,9 @@ public class TablesFacilityHelper {
                     if (b != null) {
                         try {
                             fa = new FileAnnotationI();
-                            fa.setFile(new OriginalFileI(tableData[j], false));
+                            OriginalFile tmp = new OriginalFileI(tableData[j], false);
+                            tmp = (OriginalFile) b.findIObject(ctx, tmp);
+                            fa.setFile(tmp);
                             rowData[j] = new FileAnnotationData(fa);
                             //rowData[j] = (OriginalFile) b.findIObject(ctx, new OriginalFileI(tableData[j], false));
                         } catch (Exception e) {
