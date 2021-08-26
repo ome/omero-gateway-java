@@ -1,6 +1,6 @@
 /*
  *------------------------------------------------------------------------------
- *  Copyright (C) 2006-2017 University of Dundee. All rights reserved.
+ *  Copyright (C) 2006-2021 University of Dundee. All rights reserved.
  *
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -20,10 +20,13 @@
  */
 package omero.gateway.rnd;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import omero.ServerError;
 import omero.api.RawPixelsStorePrx;
+import omero.api.ResolutionDescription;
 import omero.gateway.Gateway;
 import omero.gateway.SecurityContext;
 import omero.gateway.exception.DSOutOfServiceException;
@@ -245,7 +248,36 @@ public class DataSink implements AutoCloseable
             throw new DataSourceException("Couldn't get histogram data", e);
         }
     }
-    
+
+    /**
+     * Get the available resolution descriptions
+     * @return See above
+     * @throws DataSourceException If an error occurs while retrieving the data
+     */
+    public List<ResolutionDescription> getResolutionDescriptions() throws DataSourceException {
+        try {
+            return Arrays.asList(store.getResolutionDescriptions());
+        } catch (Exception e) {
+            throw new DataSourceException("Couldn't get resolution descriptions", e);
+        }
+    }
+
+    /**
+     * Set the resolution level and returns the previous one.
+     * @param level The SecurityContext
+     * @return See above
+     * @throws DataSourceException If an error occurs while retrieving the data
+     */
+    public int setResolutionLevel(int level) throws DataSourceException {
+        try {
+            int resLevel = store.getResolutionLevel();
+            store.setResolutionLevel(level);
+            return resLevel;
+        } catch (ServerError e) {
+            throw new DataSourceException("Couldn't set resolution level data", e);
+        }
+    }
+
     /**
      * Returns <code>true</code> if a data source has already been created
      * for the specified pixels set, <code>false</code> otherwise.
