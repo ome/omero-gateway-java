@@ -432,7 +432,7 @@ public class MaskData
     }
 
     /**
-     * Get the image this masks belongs too
+     * Get the image this masks belongs to
      * @return See above.
      */
     public ImageData getImage() {
@@ -440,7 +440,7 @@ public class MaskData
     }
 
     /**
-     * Set the image this masks belongs too
+     * Set the image this masks belongs to
      * @param image The image
      */
     public void setImage(ImageData image) {
