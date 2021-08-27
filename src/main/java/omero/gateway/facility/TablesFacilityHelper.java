@@ -20,6 +20,7 @@ package omero.gateway.facility;
 
 import omero.IllegalArgumentException;
 import omero.gateway.SecurityContext;
+import omero.gateway.model.DatasetData;
 import omero.gateway.model.FileAnnotationData;
 import omero.gateway.model.ImageData;
 import omero.gateway.model.MaskData;
@@ -31,6 +32,7 @@ import omero.gateway.model.WellData;
 import omero.grid.BoolColumn;
 import omero.grid.Column;
 import omero.grid.Data;
+import omero.grid.DatasetColumn;
 import omero.grid.DoubleArrayColumn;
 import omero.grid.DoubleColumn;
 import omero.grid.FileColumn;
@@ -258,6 +260,9 @@ public class TablesFacilityHelper {
 //                dataArray[i] = rowData;
 //                header[i].setType(DatasetData.class);
 //            }
+            if (col instanceof DatasetColumn) {
+                fac.logWarn(this,"DatasetColumn not supported yet.", null);
+            }
             if (col instanceof LongArrayColumn) {
                 Long[][] rowData = new Long[nRows][];
                 long tableData[][] = ((LongArrayColumn) col).values;
@@ -531,6 +536,9 @@ public class TablesFacilityHelper {
 //                d[i] = ((DatasetData) data[i]).getId();
 //            c = new DatasetColumn(header, description, d);
 //        }
+        else if (type.equals(DatasetData.class)) {
+            fac.logWarn(this,"Dataset not supported yet.", null);
+        }
 
         else if (type.equals(Object.class)) {
             fac.logWarn(this, "No concrete type specified for column '"
