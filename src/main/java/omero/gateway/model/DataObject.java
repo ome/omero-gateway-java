@@ -1,6 +1,6 @@
 /*
  *------------------------------------------------------------------------------
- *  Copyright (C) 2006-2017 University of Dundee. All rights reserved.
+ *  Copyright (C) 2006-2021 University of Dundee. All rights reserved.
  *
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -50,6 +50,7 @@ import omero.model.Image;
 import omero.model.LongAnnotation;
 import omero.model.Permissions;
 import omero.model.Pixels;
+import omero.model.PlaneInfo;
 import omero.model.Plate;
 import omero.model.Project;
 import omero.model.Screen;
@@ -583,6 +584,17 @@ public abstract class DataObject {
      */
     public Channel asChannel() {
         return (Channel) asIObject();
+    }
+
+    /**
+     * Returns the hosted IObject as a PlaneInfo. Not null; may throw class-cast
+     * exception
+     *
+     * @throws ClassCastException
+     * @return See above
+     */
+    public PlaneInfo asPlaneInfo() {
+        return (PlaneInfo) asIObject();
     }
 
     /**

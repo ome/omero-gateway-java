@@ -32,7 +32,11 @@ import java.util.Arrays;
 import omero.ServerError;
 import omero.api.IQueryPrx;
 import omero.gateway.model.FilesetData;
+import omero.gateway.model.PixelsData;
+import omero.gateway.model.PlaneInfoData;
 import omero.model.FilesetI;
+import omero.model.PlaneInfo;
+import omero.sys.Parameters;
 import org.apache.commons.collections.CollectionUtils;
 
 import omero.api.IMetadataPrx;
@@ -301,6 +305,35 @@ public class MetadataFacility extends Facility {
             handleException(this, t, "Could not get the file paths.");
         }
         return Collections.emptyList();
+    }
+
+    /**
+     * Get the plane infos.
+     * @param ctx The SecurityContext
+     * @param pix The PixelsData
+     * @return See above
+     * @throws DSOutOfServiceException
+     * @throws DSAccessException
+     */
+    public List<PlaneInfoData> getPlaneInfos(SecurityContext ctx, PixelsData pix) throws DSOutOfServiceException,
+            DSAccessException {
+        List<PlaneInfoData> result = new ArrayList<>();
+        try {
+            ParametersI p = new ParametersI();
+            p.addLong("id", pix.getId());
+            List<IObject> planeinfos = gateway.getQueryService(ctx)
+                .findAllByQuery("select info from PlaneInfo as info " +
+                                "join fetch info.deltaT as dt " +
+                                "join fetch info.exposureTime as et " +
+                                "where info.pixels.id = :id",
+                        p);
+            for (IObject obj : planeinfos) {
+                result.add(new PlaneInfoData((PlaneInfo) obj));
+            }
+        } catch (Throwable th) {
+            handleException(this, th, "Could not get the planeinfos.");
+        }
+        return result;
     }
 
     /**
