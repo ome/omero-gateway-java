@@ -94,7 +94,7 @@ public class TableDataColumn {
                 || type.equals(Double.class) || type.equals(Double[].class)
                 || type.equals(OriginalFile.class)
                 || type.equals(FileAnnotationData.class) // Deprecated!
-                // || type.equals(DatasetData.class) // doesn't work
+                || type.equals(DatasetData.class) // doesn't work
                 || type.equals(Float[].class) || type.equals(ImageData.class)
                 || type.equals(Long.class) || type.equals(Long[].class)
                 || type.equals(MaskData.class) || type.equals(PlateData.class)
