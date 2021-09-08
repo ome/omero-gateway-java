@@ -1,3 +1,11 @@
+5.6.7 (September 2021)
+----------------------
+
+- Fix tablesfacility ([#58](https://github.com/ome/omero-gateway-java/pull/58))
+- Add method to get PlaneInfos ([#57](https://github.com/ome/omero-gateway-java/pull/57))
+- Add resolution parameter to getTile method ([#51](https://github.com/ome/omero-gateway-java/pull/51))
+- Handle well column ([#52](https://github.com/ome/omero-gateway-java/pull/52))
+
 5.6.6 (June 2021)
 -----------------
 
