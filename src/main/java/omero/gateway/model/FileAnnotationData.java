@@ -1,6 +1,6 @@
 /*
  *------------------------------------------------------------------------------
- *  Copyright (C) 2006-2017 University of Dundee. All rights reserved.
+ *  Copyright (C) 2006-2021 University of Dundee. All rights reserved.
  *
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -201,7 +201,7 @@ public class FileAnnotationData extends AnnotationData {
      *
      * @return See above.
      */
-    private OriginalFile getFile()
+    public OriginalFile getFile()
     {
         OriginalFile f = ((FileAnnotation) asAnnotation()).getFile();
         if (f != null && f.isLoaded()) return f;
@@ -497,9 +497,9 @@ public class FileAnnotationData extends AnnotationData {
      */
     public long getFileID()
     {
-        if (getId() < 0)  return -1;
         OriginalFile f = getFile();
-        if (f == null || f.getId() == null)  return -1;
+        if (f == null || f.getId() == null)
+            return -1;
         return f.getId().getValue();
     }
 

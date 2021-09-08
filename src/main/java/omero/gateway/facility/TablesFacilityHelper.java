@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 University of Dundee & Open Microscopy Environment.
+ * Copyright (C) 2017-2021 University of Dundee & Open Microscopy Environment.
  * All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,6 +19,8 @@
 package omero.gateway.facility;
 
 import omero.IllegalArgumentException;
+import omero.gateway.SecurityContext;
+import omero.gateway.model.DatasetData;
 import omero.gateway.model.FileAnnotationData;
 import omero.gateway.model.ImageData;
 import omero.gateway.model.MaskData;
@@ -30,6 +32,7 @@ import omero.gateway.model.WellData;
 import omero.grid.BoolColumn;
 import omero.grid.Column;
 import omero.grid.Data;
+import omero.grid.DatasetColumn;
 import omero.grid.DoubleArrayColumn;
 import omero.grid.DoubleColumn;
 import omero.grid.FileColumn;
@@ -46,11 +49,15 @@ import omero.model.FileAnnotation;
 import omero.model.FileAnnotationI;
 import omero.model.Image;
 import omero.model.ImageI;
+import omero.model.OriginalFile;
+import omero.model.OriginalFileI;
 import omero.model.Plate;
 import omero.model.PlateI;
 import omero.model.Roi;
 import omero.model.RoiI;
 import omero.model.WellI;
+
+import java.util.concurrent.ExecutionException;
 
 /**
  * Helper class which deals with the various conversions from omero.grid objects
@@ -75,13 +82,17 @@ public class TablesFacilityHelper {
 
     /** Reference to the TablesFacility */
     private TablesFacility fac;
-    
+
+    /** Reference to the current SecurityContext */
+    private SecurityContext ctx;
+
     /**
      * Create a new instance
      * @param fac Reference to the TablesFacility
      */
-    TablesFacilityHelper(TablesFacility fac) {
+    TablesFacilityHelper(TablesFacility fac, SecurityContext ctx) {
         this.fac = fac;
+        this.ctx = ctx;
     }
 
     /**
@@ -133,6 +144,16 @@ public class TablesFacilityHelper {
 
         dataArray = new Object[nCols][nRows];
 
+        BrowseFacility b = null;
+        ROIFacility r = null;
+        try {
+            b = fac.gateway.getFacility(BrowseFacility.class);
+            r = fac.gateway.getFacility(ROIFacility.class);
+        } catch (ExecutionException e) {
+            fac.logWarn(this,
+                    "Can't get references to Facilities. Objects might be unloaded.", e);
+        }
+
         for (int i = 0; i < data.columns.length; i++) {
             Column col = data.columns[i];
             if (col instanceof BoolColumn) {
@@ -166,13 +187,30 @@ public class TablesFacilityHelper {
             }
             if (col instanceof FileColumn) {
                 FileAnnotationData[] rowData = new FileAnnotationData[nRows];
+                // TODO: FileAnnotationData needs to be replaced with OriginalFile in future!
+                //OriginalFile[] rowData = new OriginalFile[nRows];
                 long tableData[] = ((FileColumn) col).values;
                 for (int j = 0; j < nRows; j++) {
-                    FileAnnotation f = new FileAnnotationI(tableData[j], false);
-                    rowData[j] = new FileAnnotationData(f);
+                    FileAnnotation fa = new FileAnnotationI();
+                    fa.setFile(new OriginalFileI(tableData[j], false));
+                    rowData[j] = new FileAnnotationData(fa);
+                    //rowData[j] = new OriginalFileI(tableData[j], false);
+                    if (b != null) {
+                        try {
+                            fa = new FileAnnotationI();
+                            OriginalFile tmp = new OriginalFileI(tableData[j], false);
+                            tmp = (OriginalFile) b.findIObject(ctx, tmp);
+                            fa.setFile(tmp);
+                            rowData[j] = new FileAnnotationData(fa);
+                            //rowData[j] = (OriginalFile) b.findIObject(ctx, new OriginalFileI(tableData[j], false));
+                        } catch (Exception e) {
+                            fac.logWarn(this,"Can't load object.", e);
+                        }
+                    }
                 }
                 dataArray[i] = rowData;
                 header[i].setType(FileAnnotationData.class);
+                //header[i].setType(OriginalFile.class);
             }
             if (col instanceof FloatArrayColumn) {
                 Float[][] rowData = new Float[nRows][];
@@ -193,9 +231,37 @@ public class TablesFacilityHelper {
                 for (int j = 0; j < nRows; j++) {
                     Image im = new ImageI(tableData[j], false);
                     rowData[j] = new ImageData(im);
+                    if (b != null) {
+                        try {
+                            rowData[j] = new ImageData((Image) b.findIObject(ctx, im));
+                        } catch (Exception e) {
+                            fac.logWarn(this,"Can't load object.", e);
+                        }
+                    }
                 }
                 dataArray[i] = rowData;
                 header[i].setType(ImageData.class);
+            }
+            // Doesn't work yet see https://github.com/ome/omero-server/issues/129
+//            if (col instanceof DatasetColumn) {
+//                DatasetData[] rowData = new DatasetData[nRows];
+//                long tableData[] = ((DatasetColumn) col).values;
+//                for (int j = 0; j < nRows; j++) {
+//                    Dataset d = new DatasetI(tableData[j], false);
+//                    rowData[j] = new DatasetData(d);
+//                    if (b != null) {
+//                        try {
+//                            rowData[j] = new DatasetData((Dataset) b.findIObject(ctx, d));
+//                        } catch (Exception e) {
+//                            fac.logWarn(this,"Can't load object.", e);
+//                        }
+//                    }
+//                }
+//                dataArray[i] = rowData;
+//                header[i].setType(DatasetData.class);
+//            }
+            if (col instanceof DatasetColumn) {
+                fac.logWarn(this,"DatasetColumn not supported yet.", null);
             }
             if (col instanceof LongArrayColumn) {
                 Long[][] rowData = new Long[nRows][];
@@ -222,10 +288,24 @@ public class TablesFacilityHelper {
                 MaskColumn mc = ((MaskColumn) col);
                 MaskData[] rowData = new MaskData[nRows];
                 for (int j = 0; j < nRows; j++) {
-                    MaskData md = new MaskData(mc.x[j], mc.y[j], mc.w[j],
-                            mc.h[j], mc.bytes[j]);
-                    md.setZ(mc.theZ[j]);
-                    md.setT(mc.theT[j]);
+                    double x = j < mc.x.length ? mc.x[j] : -1;
+                    double y = j < mc.y.length ? mc.y[j] : -1;
+                    double w = j < mc.w.length ? mc.w[j] : -1;
+                    double h = j < mc.h.length ? mc.h[j] : -1;
+                    byte[] d = j < mc.bytes.length ? mc.bytes[j] : new byte[0];
+                    MaskData md = new MaskData(x, y, w, h, d);
+                    if (j < mc.theZ.length)
+                        md.setZ(mc.theZ[j]);
+                    if (j < mc.theT.length)
+                        md.setT(mc.theT[j]);
+                    if ( b != null && j < mc.imageId.length && mc.imageId[j] >= 0) {
+                        try {
+                            md.setImage(new ImageData((Image) b.findIObject(ctx,
+                                    new ImageI(mc.imageId[j], false))));
+                        } catch (Exception e) {
+                            fac.logWarn(this,"Can't load object.", e);
+                        }
+                    }
                     rowData[j] = md;
                 }
                 dataArray[i] = rowData;
@@ -237,6 +317,13 @@ public class TablesFacilityHelper {
                 for (int j = 0; j < nRows; j++) {
                     Plate p = new PlateI(tableData[j], false);
                     rowData[j] = new PlateData(p);
+                    if (b != null) {
+                        try {
+                            rowData[j] = new PlateData((Plate) b.findIObject(ctx, p));
+                        } catch (Exception e) {
+                            fac.logWarn(this,"Can't load object.", e);
+                        }
+                    }
                 }
                 dataArray[i] = rowData;
                 header[i].setType(PlateData.class);
@@ -247,6 +334,13 @@ public class TablesFacilityHelper {
                 for (int j = 0; j < nRows; j++) {
                     Roi p = new RoiI(tableData[j], false);
                     rowData[j] = new ROIData(p);
+                    if (r != null) {
+                        try {
+                            rowData[j] = r.loadROI(ctx, tableData[j]).getROIs().iterator().next();
+                        } catch (Exception e) {
+                            fac.logWarn(this,"Can't load object.", e);
+                        }
+                    }
                 }
                 dataArray[i] = rowData;
                 header[i].setType(ROIData.class);
@@ -259,7 +353,15 @@ public class TablesFacilityHelper {
                 WellData[] rowData = new WellData[nRows];
                 long tableData[] = ((WellColumn) col).values;
                 for (int j = 0; j < nRows; j++) {
-                    rowData[j] = new WellData(new WellI(tableData[j], false));
+                    WellI p = new WellI(tableData[j], false);
+                    rowData[j] = new WellData(p);
+                    if (b != null) {
+                        try {
+                            rowData[j] = new WellData((WellI) b.findIObject(ctx, p));
+                        } catch (Exception e) {
+                            fac.logWarn(this,"Can't load object.", e);
+                        }
+                    }
                 }
                 dataArray[i] = rowData;
                 header[i].setType(WellData.class);
@@ -312,11 +414,20 @@ public class TablesFacilityHelper {
             c = new DoubleColumn(header, description, d);
         }
 
+        else if (type.equals(OriginalFile.class)) {
+            long[] d = new long[data.length];
+            for (int i = 0; i < data.length; i++)
+                d[i] = ((OriginalFile) data[i]).getId().getValue();
+            c = new FileColumn(header, description, d);
+        }
+
         else if (type.equals(FileAnnotationData.class)) {
             long[] d = new long[data.length];
             for (int i = 0; i < data.length; i++)
                 d[i] = ((FileAnnotationData) data[i]).getFileID();
             c = new FileColumn(header, description, d);
+            fac.logWarn(this, "Support for FileAnnotationData is deprecated." +
+                    " Use OriginalFile instead.", null);
         }
 
         else if (type.equals(Float[].class)) {
@@ -373,7 +484,10 @@ public class TablesFacilityHelper {
 
             for (int i = 0; i < data.length; i++) {
                 MaskData md = (MaskData) data[i];
-                // TODO: Where get the imageId from!?
+                if (md.getImage() != null)
+                    imageId[i] = md.getImage().getId();
+                else
+                    imageId[i] = -1;
                 theZ[i] = md.getZ();
                 theT[i] = md.getT();
                 x[i] = md.getX();
@@ -413,6 +527,17 @@ public class TablesFacilityHelper {
             for (int i = 0; i < data.length; i++)
                 d[i] = ((WellData) data[i]).getId();
             c = new WellColumn(header, description, d);
+        }
+
+        // Doesn't work yet see https://github.com/ome/omero-server/issues/129
+//        else if (type.equals(DatasetData.class)) {
+//            long[] d = new long[data.length];
+//            for (int i = 0; i < data.length; i++)
+//                d[i] = ((DatasetData) data[i]).getId();
+//            c = new DatasetColumn(header, description, d);
+//        }
+        else if (type.equals(DatasetData.class)) {
+            fac.logWarn(this,"Dataset not supported yet.", null);
         }
 
         else if (type.equals(Object.class)) {
@@ -528,16 +653,22 @@ public class TablesFacilityHelper {
                     ((DoubleColumn) col).values[r] = (Double) data.getData()[c][r];
                 }
                 if (col instanceof FileColumn) {
-                    if (!data.getColumns()[c].getType().equals(
-                            FileAnnotationData.class))
+                    if (data.getColumns()[c].getType().equals(OriginalFile.class)) {
+                        ((FileColumn) col).values[r] = ((OriginalFile) data
+                                .getData()[c][r]).getId().getValue();
+                    }
+                    else if (data.getColumns()[c].getType().equals(FileAnnotationData.class)) {
+                        ((FileColumn) col).values[r] = ((FileAnnotationData) data
+                                .getData()[c][r]).getFileID();
+                    }
+                    else {
                         throw new IllegalArgumentException(
-                                "FileAnnotationData type expected for column "
+                                "OriginalFile or FileAnnotationData type expected for column "
                                         + c
                                         + ", but is "
                                         + data.getColumns()[c].getType()
-                                                .getSimpleName() + " !");
-                    ((FileColumn) col).values[r] = ((FileAnnotationData) data
-                            .getData()[c][r]).getFileID();
+                                        .getSimpleName() + " !");
+                    }
                 }
                 if (col instanceof FloatArrayColumn) {
                     if (!data.getColumns()[c].getType().equals(Float[].class))

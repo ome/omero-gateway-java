@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2017 University of Dundee & Open Microscopy Environment.
+ * Copyright (C) 2016-2021 University of Dundee & Open Microscopy Environment.
  * All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -124,7 +124,7 @@ public class TablesFacility extends Facility {
             if (name == null)
                 name = UUID.randomUUID().toString();
 
-            TablesFacilityHelper helper = new TablesFacilityHelper(this);
+            TablesFacilityHelper helper = new TablesFacilityHelper(this, ctx);
             helper.parseTableData(data);
 
             SharedResourcesPrx sr = gateway.getSharedResources(ctx);
@@ -404,7 +404,7 @@ public class TablesFacility extends Facility {
                         Object.class);
             }
 
-            TablesFacilityHelper helper = new TablesFacilityHelper(this);
+            TablesFacilityHelper helper = new TablesFacilityHelper(this, ctx);
             helper.parseData(data, header);
 
             TableData result = new TableData(header, helper.getDataArray());
@@ -503,7 +503,7 @@ public class TablesFacility extends Facility {
 
             Data data = table.read(columns, rowFrom, rowTo + 1);
 
-            TablesFacilityHelper helper = new TablesFacilityHelper(this);
+            TablesFacilityHelper helper = new TablesFacilityHelper(this, ctx);
             helper.parseData(data, header);
 
             result = new TableData(header, helper.getDataArray());
@@ -583,7 +583,10 @@ public class TablesFacility extends Facility {
      * @throws DSAccessException
      *             If an error occurred while trying to retrieve data from OMERO
      *             service.
+     *
+     * @deprecated This method is not reliable and might be removed/replaced in future.
      */
+    @Deprecated
     public void updateTable(SecurityContext ctx, TableData data)
             throws DSOutOfServiceException, DSAccessException {
         TablePrx table = null;
