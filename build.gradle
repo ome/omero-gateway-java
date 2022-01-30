@@ -14,6 +14,7 @@ repositories {
 
 dependencies {
     api("org.openmicroscopy:omero-blitz:5.5.8")
+    api("joda-time:joda-time:2.10.3")
 
     implementation("commons-beanutils:commons-beanutils:1.9.3")
     implementation("com.zeroc:icegrid:3.6.5")
