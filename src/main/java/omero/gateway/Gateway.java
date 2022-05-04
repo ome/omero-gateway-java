@@ -1,6 +1,6 @@
 /*
  *------------------------------------------------------------------------------
- *  Copyright (C) 2015-2021 University of Dundee. All rights reserved.
+ *  Copyright (C) 2015-2022 University of Dundee. All rights reserved.
  *
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -1770,8 +1770,12 @@ public class Gateway implements AutoCloseable {
             } else {
                 client = new client(login.getServer().getHost(),
                         login.getServer().getPort());
-                prx = client.createSession(login.getUser().getUsername(), login
-                        .getUser().getPassword());
+                if (isSessionID(login.getUser().getUsername())) {
+                    prx = client.joinSession(login.getUser().getUsername());
+                } else {
+                    prx = client.createSession(login.getUser().getUsername(), login
+                            .getUser().getPassword());
+                }
             }
             if (ctx.getGroupID() >= 0) {
                 prx.setSecurityContext(new ExperimenterGroupI(ctx.getGroupID(), false));
