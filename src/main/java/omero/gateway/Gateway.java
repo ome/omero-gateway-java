@@ -1766,7 +1766,11 @@ public class Gateway implements AutoCloseable {
                 List<String> args = login.getArguments();
                 client = new client(
                         args.toArray(new String[args.size()]));
-                prx = client.createSession();
+                if (isSessionID(login.getUser().getUsername())) {
+                    prx = client.joinSession(login.getUser().getUsername());
+                } else {
+                    prx = client.createSession();
+                }
             } else {
                 client = new client(login.getServer().getHost(),
                         login.getServer().getPort());
