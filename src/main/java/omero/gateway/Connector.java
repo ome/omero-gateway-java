@@ -176,9 +176,6 @@ class Connector
 
     /** The username if this is a derived connector */
     private String username = null;
-
-    /** Flag to indicate if connected to an already existing session */
-    private boolean isSessionLogin = false;
     
     /** The PropertyChangeSupport */
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
@@ -195,11 +192,11 @@ class Connector
      * @throws Exception Thrown if entry points cannot be initialized.
      */
     Connector(SecurityContext context, client client,
-            ServiceFactoryPrx entryEncrypted, boolean encrypted, boolean sessionLogin, Logger logger)
+            ServiceFactoryPrx entryEncrypted, boolean encrypted, Logger logger)
                     throws Exception
     {
         this(context, client,
-                entryEncrypted, encrypted, sessionLogin, null, logger);
+                entryEncrypted, encrypted, null, logger);
     }
     
     /**
@@ -215,7 +212,7 @@ class Connector
      * @throws Exception Thrown if entry points cannot be initialized.
      */
     Connector(SecurityContext context, client client,
-            ServiceFactoryPrx entryEncrypted, boolean encrypted, boolean sessionLogin, String username, Logger logger)
+            ServiceFactoryPrx entryEncrypted, boolean encrypted, String username, Logger logger)
                     throws Exception
     {
         if (context == null)
@@ -235,7 +232,6 @@ class Connector
         this.logger = logger;
         this.secureClient = client;
         this.entryEncrypted = entryEncrypted;
-        this.isSessionLogin = sessionLogin;
         this.context = context;
         final MapMaker mapMaker = new MapMaker();
         statelessServices = mapMaker.makeMap();
@@ -697,16 +693,6 @@ class Connector
         }
         String id = secureClient.getSessionId();
         String PROP = Gateway.PROP_SESSION_CLOSED;
-        if (isSessionLogin) {
-            try {
-                secureClient.getSession().detachOnDestroy();
-                if (unsecureClient != null)
-                    unsecureClient.getSession().detachOnDestroy();
-            } catch (ServerError e) {
-                logger.warn(this, new LogMessage("Could not detach from server session", e));
-            }
-            PROP = Gateway.PROP_SESSION_DETACHED;
-        }
         secureClient.__del__(); // Won't throw.
         this.pcs.firePropertyChange(PROP, null, id);
         if (unsecureClient != null) {
@@ -971,7 +957,7 @@ class Connector
                         .getUuid().getValue(), session.getUuid().getValue());
                 Connector.this.pcs.firePropertyChange(Gateway.PROP_SESSION_CREATED, null, client.getSessionId());
                 final Connector c = new Connector(context.copy(), client,
-                        userSession, unsecureClient == null, isSessionLogin, userName, logger);
+                        userSession, unsecureClient == null, userName, logger);
                 for (PropertyChangeListener l : Connector.this.pcs
                         .getPropertyChangeListeners())
                     c.addPropertyChangeListener(l);
@@ -980,17 +966,6 @@ class Connector
                 return c;
             }
         });
-    }
-
-    /**
-     * By default the session is closed if it was initialized
-     * by the gateway. This method allows to override this.
-     * Has to be called after <code>connect()</code>.
-     * @param closeSession Pass <code>false</code> to not close
-     *                     the session on disconnect
-     */
-    void closeSessionOnExit(boolean closeSession) {
-        this.isSessionLogin = !closeSession;
     }
 
     //
