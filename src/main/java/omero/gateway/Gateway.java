@@ -367,69 +367,6 @@ public class Gateway implements AutoCloseable {
     }
 
     /**
-     * @deprecated This method will be removed in future (never used).
-     *
-     * Tries to rejoin the session.
-     *
-     * @return See above.
-     */
-    @Deprecated
-    public boolean joinSession() {
-        try {
-            isNetworkUp(false); // Force re-check to prevent hang
-        } catch (Exception e) {
-            // no need to handle the exception.
-        }
-        boolean networkup = isNetworkUp(false);
-        connected = false;
-        if (!networkup) {
-            if (log != null) {
-                log.warn(this, "Network is down");
-            }
-            return false;
-        }
-        List<Connector> connectors = removeAllConnectors();
-        Iterator<Connector> i = connectors.iterator();
-        Connector c;
-        int index = 0;
-        while (i.hasNext()) {
-            c = i.next();
-            try {
-                if (log != null)
-                    log.debug(this, "joining the session ");
-                c.joinSession();
-                groupConnectorMap.put(c.getGroupID(), c);
-            } catch (Throwable t) {
-                if (log != null)
-                    log.error(this,
-                        new LogMessage("Failed to join the session ", t));
-                // failed to join so we create a new one, first we shut down
-                try {
-                    c.shutDownServices(true);
-                    c.close(networkup);
-                } catch (Throwable e) {
-                    if (log != null)
-                        log.error(this, new LogMessage(
-                            "Failed to close the session ", t));
-                }
-                if (!groupConnectorMap.containsKey(c.getGroupID())) {
-                    try {
-                        createConnector(new SecurityContext(c.getGroupID()),
-                                false);
-                    } catch (Exception e) {
-                        if (log != null)
-                            log.error(this, new LogMessage(
-                                "Failed to create connector ", e));
-                        index++;
-                    }
-                }
-            }
-        }
-        connected = index == 0;
-        return connected;
-    }
-
-    /**
      * Check if the Gateway is still connected to the server
      * 
      * @return See above.
