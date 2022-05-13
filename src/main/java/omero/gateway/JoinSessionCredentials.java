@@ -1,6 +1,6 @@
 /*
  *------------------------------------------------------------------------------
- *  Copyright (C) 2017 University of Dundee. All rights reserved.
+ *  Copyright (C) 2017-2022 University of Dundee. All rights reserved.
  *
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -25,10 +25,13 @@ import java.util.UUID;
 /**
  * Holds all necessary information needed for joining an active OMERO server
  * session
- * 
+ *
+ * @deprecated Use LoginCredentials and use session id as username and password.
+ *
  * @author Dominik Lindner &nbsp;&nbsp;&nbsp;&nbsp; <a
  *         href="mailto:d.lindner@dundee.ac.uk">d.lindner@dundee.ac.uk</a>
  */
+@Deprecated()
 public class JoinSessionCredentials extends LoginCredentials {
 
     /**
