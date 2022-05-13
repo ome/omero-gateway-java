@@ -1,6 +1,6 @@
 /*
  *------------------------------------------------------------------------------
- *  Copyright (C) 2015-2021 University of Dundee. All rights reserved.
+ *  Copyright (C) 2015-2022 University of Dundee. All rights reserved.
  *
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -1019,22 +1019,7 @@ public class Gateway implements AutoCloseable {
             // doesn't much matter
         }
         ServiceFactoryPrx entryEncrypted = null;
-        
-        boolean connected = false;
-        boolean isSessionLogin = false;
-        if (isSessionID(username)) {
-            try {
-                entryEncrypted = secureClient.joinSession(username);
-                connected = true;
-                isSessionLogin = true;
-            } catch (Exception e) {
-                // Although username looks like a session ID it apparently isn't
-                // one.
-                log.warn(this, new LogMessage("Could not join session "
-                        + username + " , trying username/password login next.",
-                        e));
-            }
-        }
+
         if (!connected) {
             if (args != null) {
                 try {
@@ -1090,7 +1075,7 @@ public class Gateway implements AutoCloseable {
         keepAliveExecutor = new ScheduledThreadPoolExecutor(1);
         keepAliveExecutor.scheduleWithFixedDelay(r, 60, 60, TimeUnit.SECONDS);
         
-        return new SessionWrapper(secureClient, isSessionLogin);
+        return new SessionWrapper(secureClient, isSessionID(username));
     }
 
     /**
