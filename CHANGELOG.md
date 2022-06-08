@@ -1,3 +1,10 @@
+5.6.10 (June 2022)
+------------------
+
+- Bump omero-blitz version to 5.5.12
+- Bump org.openmicroscopy.project plugin to 5.5.4
+- Add Gradle publication workflow
+
 5.6.9 (April 2022)
 ------------------
 
