@@ -20,6 +20,7 @@
  */
 package omero.gateway.model;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,7 @@ import omero.model.Plate;
 import omero.model.PlateAcquisition;
 import omero.model.PlateI;
 import omero.model.ScreenPlateLink;
+import omero.model.Well;
 import omero.model.enums.UnitsLength;
 
 /**
@@ -134,6 +136,13 @@ public class PlateData extends DataObject {
     }
 
     // IMMUTABLES
+
+    public Set<WellData> getWells() {
+        Set<WellData> wells = new HashSet();
+        for (Well w : asPlate().copyWells())
+            wells.add(new WellData(w));
+        return wells;
+    }
 
     /**
      * Sets the name of the plate.
