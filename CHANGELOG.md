@@ -1,3 +1,11 @@
+5.7.0 (December 2022)
+---------------------
+
+- Remove joinsession ([#63](https://github.com/ome/omero-gateway-java/pull/63))
+- Bump to TestNG 7.5 ([#61](https://github.com/ome/omero-gateway-java/pull/61))
+- Bump omero-blitz version to 5.6.0
+
+
 5.6.10 (June 2022)
 ------------------
 
