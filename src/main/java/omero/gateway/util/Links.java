@@ -42,7 +42,7 @@ public class Links {
 
     /**
      * Get the Link class for a certain child parent combination, e.g. parent:
-     * DatasetData, child: ImageData => omero.model.DatasetImageLinkI
+     * DatasetData, child: ImageData =&gt; omero.model.DatasetImageLinkI
      *
      * @param parent The parent
      * @param child  The child
