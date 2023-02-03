@@ -367,6 +367,26 @@ public class MetadataFacility extends Facility {
     }
 
     /**
+     * Submits an OriginalMetadataRequest and waits for response
+     * @param ctx The SecurityContext
+     * @param imageId The image ID
+     * @return The OriginalMetadataResponse or null if something went wrong
+     * @throws Throwable
+     */
+    private OriginalMetadataResponse requestOriginalMetadata(SecurityContext ctx, long imageId) throws Throwable {
+        OriginalMetadataRequest cmd = new OriginalMetadataRequest();
+        cmd.imageId = imageId;
+        CmdCallbackI cb = gateway.submit(ctx, cmd);
+        if (cb.block(10000)) {
+            return (OriginalMetadataResponse) cb.getResponse();
+        }
+        else {
+            logError(this, "Could not request original metadata", null);
+            return null;
+        }
+    }
+
+    /**
      * Get the original metadata of an image and write it into a file
      * @param ctx The SecurityContext
      * @param imageId The image id
@@ -376,13 +396,9 @@ public class MetadataFacility extends Facility {
     public void getOriginalMetadata(SecurityContext ctx, long imageId, File output) throws Throwable {
         if (output == null)
             return;
-        OriginalMetadataRequest cmd = new OriginalMetadataRequest();
-        cmd.imageId = imageId;
-        CmdCallbackI cb = gateway.submit(ctx, cmd);
-        if (cb.block(10000)) {
-            OriginalMetadataResponse response = (OriginalMetadataResponse) cb.getResponse();
+        OriginalMetadataResponse response = requestOriginalMetadata(ctx, imageId);
+        if (response != null)
             (new OriginalMetadataParser(output)).read(response);
-        }
     }
 
     /**
@@ -395,13 +411,9 @@ public class MetadataFacility extends Facility {
     public void getOriginalMetadata(SecurityContext ctx, long imageId, StringBuilder buffer) throws Throwable {
         if (buffer == null)
             return;
-        OriginalMetadataRequest cmd = new OriginalMetadataRequest();
-        cmd.imageId = imageId;
-        CmdCallbackI cb = gateway.submit(ctx, cmd);
-        if (cb.block(3000)) {
-            OriginalMetadataResponse response = (OriginalMetadataResponse) cb.getResponse();
+        OriginalMetadataResponse response = requestOriginalMetadata(ctx, imageId);
+        if (response != null)
             (new OriginalMetadataParser(buffer)).read(response);
-        }
     }
 
 }
