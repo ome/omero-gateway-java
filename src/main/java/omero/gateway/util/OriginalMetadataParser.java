@@ -1,6 +1,4 @@
 /*
- * org.openmicroscopy.shoola.env.data.util.OriginalMetadataParser
- *
  *------------------------------------------------------------------------------
  *  Copyright (C) 2013-2023 University of Dundee & Open Microscopy Environment.
  *  All rights reserved.
@@ -141,7 +139,8 @@ public class OriginalMetadataParser
     }
 
     /**
-     * Reads the content of the response and writes it to the file.
+     * Reads the content of the response and writes (appends) it to the file or
+     * buffer.
      *
      * @param response The response to handle.
      * @param separator Value used to separate key and value.
@@ -151,38 +150,27 @@ public class OriginalMetadataParser
     public void read(OriginalMetadataResponse response, String separator)
             throws Exception
     {
-        Writer writer = null;
-        BufferedWriter bufferWriter = null;
-        try {
-            if (this.file != null ) {
-                writer = new OutputStreamWriter(new FileOutputStream(file, true), "UTF-8");
-                bufferWriter = new BufferedWriter(writer);
-            }
-            String value;
+       String value = writeMap(response.globalMetadata, separator);
+        if (value != null) {
+            buffer.append("[GlobalMetadata]");
+            buffer.append(System.getProperty("line.separator"));
+            buffer.append(writeMap(response.globalMetadata, separator));
+            buffer.append(System.getProperty("line.separator"));
+        }
+        value = writeMap(response.seriesMetadata, separator);
+        if (value != null) {
+            buffer.append("[SeriesMetadata]");
+            buffer.append(System.getProperty("line.separator"));
+            buffer.append(writeMap(response.seriesMetadata, separator));
+        }
 
-            value = writeMap(response.globalMetadata, separator);
-            if (value != null) {
-                buffer.append("[GlobalMetadata]");
-                buffer.append(System.getProperty("line.separator"));
-                buffer.append(writeMap(response.globalMetadata, separator));
-                buffer.append(System.getProperty("line.separator"));
-            }
-            value = writeMap(response.seriesMetadata, separator);
-            if (value != null) {
-                buffer.append("[SeriesMetadata]");
-                buffer.append(System.getProperty("line.separator"));
-                buffer.append(writeMap(response.seriesMetadata, separator));
-            }
-            if (this.file != null)
+        if (this.file != null ) {
+            Writer writer = new OutputStreamWriter(new FileOutputStream(file, true), "UTF-8");
+            try (BufferedWriter bufferWriter = new BufferedWriter(writer)) {
                 bufferWriter.write(buffer.toString());
-        } catch (Exception e) {
-            throw new Exception("An error while reading/writing the content.");
-        } finally {
-            if (bufferWriter != null) {
-                bufferWriter.close();
-            }
-            if (writer != null) {
-                writer.close();
+                buffer.setLength(0);
+            } catch (Exception e) {
+                throw new Exception("Error while writing metadata to file.");
             }
         }
     }
