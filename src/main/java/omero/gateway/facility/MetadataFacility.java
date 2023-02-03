@@ -371,19 +371,22 @@ public class MetadataFacility extends Facility {
      * @param ctx The SecurityContext
      * @param imageId The image ID
      * @return The OriginalMetadataResponse or null if something went wrong
-     * @throws Throwable
      */
-    private OriginalMetadataResponse requestOriginalMetadata(SecurityContext ctx, long imageId) throws Throwable {
+    private OriginalMetadataResponse requestOriginalMetadata(SecurityContext ctx, long imageId) {
         OriginalMetadataRequest cmd = new OriginalMetadataRequest();
         cmd.imageId = imageId;
-        CmdCallbackI cb = gateway.submit(ctx, cmd);
-        if (cb.block(10000)) {
-            return (OriginalMetadataResponse) cb.getResponse();
+        try {
+            CmdCallbackI cb = gateway.submit(ctx, cmd);
+            if (cb.block(10000)) {
+                return (OriginalMetadataResponse) cb.getResponse();
+            }
+            else {
+                logError(this, "Could not request original metadata", null);
+            }
+        } catch (Throwable t) {
+            logError(this, "Could not request original metadata", t);
         }
-        else {
-            logError(this, "Could not request original metadata", null);
-            return null;
-        }
+        return null;
     }
 
     /**
@@ -393,7 +396,7 @@ public class MetadataFacility extends Facility {
      * @param output The output file
      * @throws Throwable
      */
-    public void getOriginalMetadata(SecurityContext ctx, long imageId, File output) throws Throwable {
+    public void getOriginalMetadata(SecurityContext ctx, long imageId, File output) throws Exception {
         if (output == null)
             return;
         OriginalMetadataResponse response = requestOriginalMetadata(ctx, imageId);
@@ -408,12 +411,17 @@ public class MetadataFacility extends Facility {
      * @param buffer The buffer
      * @throws Throwable
      */
-    public void getOriginalMetadata(SecurityContext ctx, long imageId, StringBuilder buffer) throws Throwable {
+    public void getOriginalMetadata(SecurityContext ctx, long imageId, StringBuilder buffer) {
         if (buffer == null)
             return;
         OriginalMetadataResponse response = requestOriginalMetadata(ctx, imageId);
-        if (response != null)
-            (new OriginalMetadataParser(buffer)).read(response);
+        if (response != null) {
+            try {
+                (new OriginalMetadataParser(buffer)).read(response);
+            } catch (Exception e) {
+                // ignore; calling the method with a StringBuilder can't throw an exception
+            }
+        }
     }
 
 }

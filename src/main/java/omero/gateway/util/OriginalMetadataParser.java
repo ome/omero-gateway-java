@@ -147,9 +147,7 @@ public class OriginalMetadataParser
      * @throws Exception The exception thrown if an error occurred while
      * reading/writing.
      */
-    public void read(OriginalMetadataResponse response, String separator)
-            throws Exception
-    {
+    public void read(OriginalMetadataResponse response, String separator) throws Exception {
        String value = writeMap(response.globalMetadata, separator);
         if (value != null) {
             buffer.append("[GlobalMetadata]");
@@ -165,12 +163,12 @@ public class OriginalMetadataParser
         }
 
         if (this.file != null ) {
-            Writer writer = new OutputStreamWriter(new FileOutputStream(file, true), "UTF-8");
-            try (BufferedWriter bufferWriter = new BufferedWriter(writer)) {
+            try (Writer writer = new OutputStreamWriter(new FileOutputStream(file, true), "UTF-8")) {
+                BufferedWriter bufferWriter = new BufferedWriter(writer);
                 bufferWriter.write(buffer.toString());
                 buffer.setLength(0);
             } catch (Exception e) {
-                throw new Exception("Error while writing metadata to file.");
+                throw new Exception("Error while writing metadata to file.", e);
             }
         }
     }
