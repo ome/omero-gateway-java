@@ -1,3 +1,10 @@
+5.7.1 (March 2023)
+------------------
+
+- Push to releases folder on artifactory([#73](https://github.com/ome/omero-gateway-java/pull/73))
+- Fix warning in javadoc ([#70](https://github.com/ome/omero-gateway-java/pull/70))
+- Bump omero-blitz version to 5.6.1
+
 5.7.0 (December 2022)
 ---------------------
 
