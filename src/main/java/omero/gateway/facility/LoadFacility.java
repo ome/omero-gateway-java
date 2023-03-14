@@ -47,37 +47,37 @@ import omero.sys.ParametersI;
  */
 public class LoadFacility extends Facility {
 
-    private static String GET_DATASET_QUERY = "select d from Dataset as d " +
-            "join fetch d.imageLinks as l " +
-            "join fetch l.child as i " +
-            "where d.id = :id";
+    private static String GET_DATASET_QUERY = "select ds from Dataset as ds " +
+            "left join fetch ds.imageLinks as l " +
+            "left join fetch l.child as i " +
+            "where ds.id = :id";
 
     private static String GET_PROJECT_QUERY = "select p from Project as p " +
-            "join fetch p.datasetLinks as l " +
-            "join fetch l.child as i " +
+            "left join fetch p.datasetLinks as l " +
+            "left join fetch l.child as i " +
             "where p.id = :id";
 
     private static String GET_IMAGE_QUERY = "select i from Image as i " +
-            "join fetch i.pixels as p " +
-            "join fetch p.pixelsType as pt " +
+            "left join fetch i.pixels as p " +
+            "left join fetch p.pixelsType as pt " +
             "where i.id = :id";
 
     private static String GET_PLATE_QUERY = "select p from Plate as p " +
-            "join fetch p.wells as w " +
-            "join fetch p.plateAcquisitions as pa " +
+            "left join fetch p.wells as w " +
+            "left join fetch p.plateAcquisitions as pa " +
             "where p.id = :id";
 
     private static String GET_SCREEN_QUERY = "select s from Screen as s " +
-            "join fetch s.plateLinks as l " +
-            "join fetch l.child as p " +
+            "left join fetch s.plateLinks as l " +
+            "left join fetch l.child as p " +
             "where s.id = :id";
 
     private static String GET_WELL_QUERY = "select w from Well as w " +
-            "join fetch w.wellSamples as ws " +
-            "join fetch ws.plateAcquisition as pa " +
-            "join fetch ws.image as img " +
-            "join fetch img.pixels as pix " +
-            "join fetch pix.pixelsType as pt " +
+            "left join fetch w.wellSamples as ws " +
+            "left join fetch ws.plateAcquisition as pa " +
+            "left join fetch ws.image as img " +
+            "left join fetch img.pixels as pix " +
+            "left join fetch pix.pixelsType as pt " +
             "where w.id = :id";
 
     /**
