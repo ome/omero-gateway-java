@@ -141,7 +141,7 @@ public class PlateData extends DataObject {
         Set<WellData> wells = new HashSet();
         for (Well w : asPlate().copyWells())
             wells.add(new WellData(w));
-        return wells;
+        return wells.isEmpty() ? null : wells;
     }
 
     /**
