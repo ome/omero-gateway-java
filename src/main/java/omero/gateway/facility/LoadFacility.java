@@ -42,7 +42,7 @@ import omero.sys.ParametersI;
 
 /**
  * A Facility for loading basic objects. Note: These are shallow objects with just
- * one level of hierarchy loaded. E.g. a project will have a list of datasets,
+ * one level of hierarchy loaded e.g. a project will have a list of datasets,
  * but the datasets only have basic properties like name and id loaded.
  */
 public class LoadFacility extends Facility {
