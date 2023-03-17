@@ -1,3 +1,8 @@
+5.8.0 (March 2023)
+------------------
+
+- Add Facility for shallow loading of objects ([#68](https://github.com/ome/omero-gateway-java/pull/68))
+
 5.7.2 (March 2023)
 ------------------
 
