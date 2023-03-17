@@ -33,6 +33,7 @@ import omero.model.Dataset;
 import omero.model.DatasetAnnotationLink;
 import omero.model.DatasetI;
 import omero.model.DatasetImageLink;
+import omero.model.Image;
 import omero.model.LongAnnotation;
 import omero.model.ProjectDatasetLink;
 
@@ -187,7 +188,7 @@ public class DatasetData extends DataObject {
      *
      * @return See above.
      */
-    public Set getImages() {
+    public Set<ImageData> getImages() {
         if (images == null && asDataset().sizeOfImageLinks() >= 0) {
             List<DatasetImageLink> imageLinks = asDataset().copyImageLinks();
             images = new HashSet<ImageData>();
@@ -203,9 +204,9 @@ public class DatasetData extends DataObject {
      *
      * @return See above.
      */
-    public Set getProjects() {
+    public Set<ProjectData> getProjects() {
         if (projects == null && asDataset().sizeOfProjectLinks() >= 0) {
-            projects = new HashSet();
+            projects = new HashSet<ProjectData>();
             List<ProjectDatasetLink> projectLinks = asDataset()
                     .copyProjectLinks();
             for (ProjectDatasetLink link : projectLinks) {
@@ -273,7 +274,7 @@ public class DatasetData extends DataObject {
      *
      * @return See Above
      */
-    public Set getAnnotations() {
+    public Set<AnnotationData> getAnnotations() {
         if (annotations == null) {
             int size = asDataset().sizeOfAnnotationLinks();
             if (size >= 0) {
