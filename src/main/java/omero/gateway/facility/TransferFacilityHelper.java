@@ -21,16 +21,13 @@ package omero.gateway.facility;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import omero.RType;
-import omero.ServerError;
 import omero.api.IQueryPrx;
 import omero.api.RawFileStorePrx;
 import omero.gateway.Gateway;
@@ -92,7 +89,6 @@ public class TransferFacilityHelper {
     List<File> downloadImage(SecurityContext context, String targetPath,
             long imageId) throws DSAccessException, DSOutOfServiceException {
         List<File> files = new ArrayList<File>();
-        System.out.println("Test new fonction");
         ImageData image = browse.findObject(context, ImageData.class, imageId,
                 true);
 
