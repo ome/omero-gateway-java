@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2021 University of Dundee & Open Microscopy Environment.
+ * Copyright (C) 2017-2023 University of Dundee & Open Microscopy Environment.
  * All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -57,6 +57,7 @@ import omero.model.Roi;
 import omero.model.RoiI;
 import omero.model.WellI;
 
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -517,9 +518,14 @@ public class TablesFacilityHelper {
 
         else if (type.equals(String.class)) {
             String[] d = new String[data.length];
-            for (int i = 0; i < data.length; i++)
+            int size = 0;
+            for (int i = 0; i < data.length; i++) {
                 d[i] = (String) data[i];
-            c = new StringColumn(header, description, Short.MAX_VALUE, d);
+                byte[] raw = d[i].getBytes(StandardCharsets.UTF_8);
+                if (raw.length > size)
+                    size = raw.length;
+            }
+            c = new StringColumn(header, description, size, d);
         }
 
         else if (type.equals(WellData.class)) {
