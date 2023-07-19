@@ -21,14 +21,13 @@ package omero.gateway.facility;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import omero.RType;
-import omero.ServerError;
 import omero.api.IQueryPrx;
 import omero.api.RawFileStorePrx;
 import omero.gateway.Gateway;
@@ -90,7 +89,6 @@ public class TransferFacilityHelper {
     List<File> downloadImage(SecurityContext context, String targetPath,
             long imageId) throws DSAccessException, DSOutOfServiceException {
         List<File> files = new ArrayList<File>();
-
         ImageData image = browse.findObject(context, ImageData.class, imageId,
                 true);
 
@@ -125,84 +123,79 @@ public class TransferFacilityHelper {
             throw new DSAccessException("Cannot retrieve original file", e);
         }
 
+        Map<Boolean, Object> result = new HashMap<Boolean, Object>();
         if (CollectionUtils.isEmpty(filesets))
             return files;
-        Iterator<?> i;
-        List<OriginalFile> values = new ArrayList<OriginalFile>();
+        List<File> downloaded = new ArrayList<File>();
+        List<String> notDownloaded = new ArrayList<String>();
+        result.put(Boolean.valueOf(true), downloaded);
+        result.put(Boolean.valueOf(false), notDownloaded);
+
         if (image.isFSImage()) {
-            i = filesets.iterator();
-            Fileset set;
-            List<FilesetEntry> entries;
-            Iterator<FilesetEntry> j;
-            while (i.hasNext()) {
-                set = (Fileset) i.next();
-                entries = set.copyUsedFiles();
-                j = entries.iterator();
-                while (j.hasNext()) {
-                    FilesetEntry fs = j.next();
-                    values.add(fs.getOriginalFile());
-                }
-            }
-        } else
-            values.addAll((List<OriginalFile>) filesets);
+            for (Object tmp : filesets) {
+                Fileset fs = (Fileset) tmp;
 
-        RawFileStorePrx store = null;
-        OriginalFile of;
-        long size;
-        FileOutputStream stream = null;
-        long offset = 0;
-        i = values.iterator();
-        File f = null;
-
-        while (i.hasNext()) {
-            of = (OriginalFile) i.next();
-
-            try {
-                store = gateway.getRawFileService(context);
-                store.setFileId(of.getId().getValue());
-
-                f = new File(targetPath, of.getName().getValue());
-                files.add(f);
-
-                stream = new FileOutputStream(f);
-                size = of.getSize().getValue();
-                try {
-                    try {
-                        for (offset = 0; (offset + INC) < size;) {
-                            stream.write(store.read(offset, INC));
-                            offset += INC;
-                        }
-                    } finally {
-                        stream.write(store.read(offset, (int) (size - offset)));
-                        stream.close();
-                    }
-                } catch (Exception e) {
-                    if (stream != null)
-                        stream.close();
-                    if (f != null) {
-                        f.delete();
-                        files.remove(f);
-                    }
-                }
-            } catch (IOException e) {
-                if (f != null) {
-                    f.delete();
-                    files.remove(f);
-                }
-                throw new DSAccessException("Cannot create file in folderPath",
-                        e);
-            } catch (Throwable t) {
-                throw new DSAccessException("ServerError on retrieveArchived",
-                        t);
-            } finally {
-                try {
-                    store.close();
-                } catch (ServerError e) {
+                String repoPath = fs.getTemplatePrefix().getValue();
+                for (FilesetEntry fse: fs.copyUsedFiles()) {
+                    OriginalFile of = fse.getOriginalFile();
+                    String ofDir = of.getPath().getValue().replace(repoPath, "");
+                    File outDir = new File(targetPath+File.separator+ofDir);
+                    outDir.mkdirs();
+                    File saved = saveOriginalFile(context, of, outDir);
+                    if (saved != null)
+                        downloaded.add(saved);
+                    else
+                        notDownloaded.add(of.getName().getValue());
                 }
             }
         }
+        else { //Prior to FS
+            for (Object tmp : filesets) {
+                OriginalFile of = (OriginalFile) tmp;
+                File outDir = new File(targetPath);
+                File saved = saveOriginalFile(context, of, outDir);
+                if (saved != null)
+                    downloaded.add(saved);
+                else
+                    notDownloaded.add(of.getName().getValue());
+            }
+        }
 
-        return files;
+        return downloaded;
+    }
+
+    /**
+     * Save an OriginalFile of into directory dir
+     * @param ctx The SecurityContext
+     * @param of The OriginalFile
+     * @param dir The output directory
+     * @return The File if the operation was successfull, null if it wasn't.
+     */
+    private File saveOriginalFile(SecurityContext ctx, OriginalFile of, File dir) {
+        File out = new File(dir, of.getName().getValue());
+        if (out.exists()) {
+            return null;
+        }
+
+        try {
+            RawFileStorePrx store = gateway.getRawFileService(ctx);
+            store.setFileId(of.getId().getValue());
+
+            long size = of.getSize().getValue();
+            long offset = 0;
+            try (FileOutputStream stream = new FileOutputStream(out))
+            {
+                for (offset = 0; (offset+INC) < size;) {
+                    stream.write(store.read(offset, INC));
+                    offset += INC;
+                }
+                stream.write(store.read(offset, (int) (size-offset)));
+            }
+        } catch (Exception e) {
+
+            return null;
+        }
+        return out;
     }
 
     /**
