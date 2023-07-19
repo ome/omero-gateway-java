@@ -1,3 +1,10 @@
+5.8.1 (July 2023)
+-----------------
+
+- Fix bug on download images based on omero-insight#264([#78](https://github.com/ome/omero-gateway-java/pull/78)) Thanks to Rémy Dornier
+- BugFix: Set StringColumn to the correct size ([#76](https://github.com/ome/omero-gateway-java/pull/76))
+- Bump omero-blitz version to 5.6.3
+
 5.8.0 (March 2023)
 ------------------
 
