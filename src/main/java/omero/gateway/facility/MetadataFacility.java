@@ -60,7 +60,6 @@ import omero.gateway.model.ImageData;
 import omero.gateway.util.PojoMapper;
 import omero.gateway.util.Pojos;
 
-import omero.cmd.Request;
 
 /**
  * A {@link Facility} to access the metadata.
@@ -411,7 +410,7 @@ public class MetadataFacility extends Facility {
      * @param buffer The buffer
      * @throws Throwable
      */
-    public void getOriginalMetadata(SecurityContext ctx, long imageId, StringBuilder buffer) {
+    public void getOriginalMetadata(SecurityContext ctx, long imageId, StringBuffer buffer) {
         if (buffer == null)
             return;
         OriginalMetadataResponse response = requestOriginalMetadata(ctx, imageId);

@@ -1,6 +1,6 @@
 /*
  *------------------------------------------------------------------------------
- *  Copyright (C) 2013-2023 University of Dundee & Open Microscopy Environment.
+ *  Copyright (C) 2023 University of Dundee & Open Microscopy Environment.
  *  All rights reserved.
  *
  *
@@ -39,10 +39,6 @@ import omero.cmd.OriginalMetadataResponse;
 /**
  * Helper class used to read the content of
  * an <code>OriginalMetadataResponse</code>.
- *
- * @author Jean-Marie Burel &nbsp;&nbsp;&nbsp;&nbsp;
- * <a href="mailto:j.burel@dundee.ac.uk">j.burel@dundee.ac.uk</a>
- * @since 4.4
  */
 public class OriginalMetadataParser
 {
@@ -51,7 +47,7 @@ public class OriginalMetadataParser
     private final File file;
 
     /** The buffer to write to.*/
-    private final StringBuilder buffer;
+    private final StringBuffer buffer;
 
     /**
      * Writes the content of the map to a String.
@@ -108,7 +104,7 @@ public class OriginalMetadataParser
             throw new IllegalArgumentException("No file to write the " +
                     "content to.");
         this.file = file;
-        this.buffer = new StringBuilder();
+        this.buffer = new StringBuffer();
     }
 
     /**
@@ -116,7 +112,7 @@ public class OriginalMetadataParser
      *
      * @param buffer The buffer to write the content into
      */
-    public OriginalMetadataParser(StringBuilder buffer)
+    public OriginalMetadataParser(StringBuffer buffer)
     {
         if (buffer == null)
             throw new IllegalArgumentException("No buffer to write the " +
