@@ -1,6 +1,6 @@
 /*
  *------------------------------------------------------------------------------
- *  Copyright (C) 2015-2017 University of Dundee. All rights reserved.
+ *  Copyright (C) 2015-2023 University of Dundee. All rights reserved.
  *
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -286,4 +286,12 @@ public class LoginCredentials {
         this.checkVersion = checkVersion;
     }
 
+    /**
+     * Replaces username and password with the sessionId
+     * @param sessionId The sessionId
+     */
+    public void setSessionId(String sessionId) {
+        this.user.setUsername(sessionId);
+        this.user.setPassword(sessionId);
+    }
 }

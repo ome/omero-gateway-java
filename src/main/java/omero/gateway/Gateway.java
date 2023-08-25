@@ -1,6 +1,6 @@
 /*
  *------------------------------------------------------------------------------
- *  Copyright (C) 2015-2022 University of Dundee. All rights reserved.
+ *  Copyright (C) 2015-2023 University of Dundee. All rights reserved.
  *
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -294,6 +294,7 @@ public class Gateway implements AutoCloseable {
         try {
             SessionWrapper session = createSession(c);
             loggedInUser = login(session, c);
+            c.setSessionId(session.client.getSessionId());
             connected = true;
             return loggedInUser;
         } catch (CannotCreateSessionException e) {
