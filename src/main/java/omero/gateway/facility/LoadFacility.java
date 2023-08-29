@@ -26,25 +26,20 @@ import omero.gateway.Gateway;
 import omero.gateway.SecurityContext;
 import omero.gateway.exception.DSAccessException;
 import omero.gateway.exception.DSOutOfServiceException;
+import omero.gateway.model.DataObject;
 import omero.gateway.model.DatasetData;
 import omero.gateway.model.ImageData;
 import omero.gateway.model.PlateData;
 import omero.gateway.model.ProjectData;
 import omero.gateway.model.ScreenData;
 import omero.gateway.model.WellData;
-import omero.model.DatasetI;
 import omero.model.IObject;
-import omero.model.ImageI;
-import omero.model.PlateI;
-import omero.model.ProjectI;
-import omero.model.ScreenI;
-import omero.model.WellI;
 import omero.sys.ParametersI;
-
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * A Facility for loading basic objects. Note: These are shallow objects with just
@@ -53,38 +48,55 @@ import java.util.stream.Collectors;
  */
 public class LoadFacility extends Facility {
 
-    private static String GET_DATASET_QUERY = "select ds from Dataset as ds " +
+    private static String GET_DATASETS_QUERY = "select ds from Dataset as ds " +
             "left join fetch ds.imageLinks as l " +
             "left join fetch l.child as i " +
             "where ds.id in (:ids)";
 
-    private static String GET_PROJECT_QUERY = "select p from Project as p " +
+    private static String GET_DATASETS_FOR_PROJECT_QUERY = "select l.child from ProjectDatasetLink l " +
+            "where l.parent.id = :id";
+
+    private static String GET_PROJECTS_QUERY = "select p from Project as p " +
             "left join fetch p.datasetLinks as l " +
             "left join fetch l.child as i " +
             "where p.id =in (:ids)";
 
-    private static String GET_IMAGE_QUERY = "select i from Image as i " +
+    private static String GET_IMAGES_QUERY = "select i from Image as i " +
             "left join fetch i.pixels as p " +
             "left join fetch p.pixelsType as pt " +
             "where i.id in (:ids)";
 
-    private static String GET_PLATE_QUERY = "select p from Plate as p " +
+    private static String GET_IMAGES_FOR_DATASET_QUERY = "select l.child from DatasetImageLink l " +
+            "where l.parent.id = :id";
+
+    private static String GET_PLATES_QUERY = "select p from Plate as p " +
             "left join fetch p.wells as w " +
             "left join fetch p.plateAcquisitions as pa " +
             "where p.id in (:ids)";
 
-    private static String GET_SCREEN_QUERY = "select s from Screen as s " +
+    private static String GET_PLATES_FOR_SCREEN_QUERY = "select l.child from ScreenPlateLink l " +
+            "where l.parent.id = :id";
+
+    private static String GET_SCREENS_QUERY = "select s from Screen as s " +
             "left join fetch s.plateLinks as l " +
             "left join fetch l.child as p " +
             "where s.id in (:ids)";
 
-    private static String GET_WELL_QUERY = "select w from Well as w " +
+    private static String GET_WELLS_QUERY = "select w from Well as w " +
             "left join fetch w.wellSamples as ws " +
             "left join fetch ws.plateAcquisition as pa " +
             "left join fetch ws.image as img " +
             "left join fetch img.pixels as pix " +
             "left join fetch pix.pixelsType as pt " +
             "where w.id in (:ids)";
+
+    private static String GET_WELLS_FOR_PLATE_QUERY = "select w from Well as w " +
+            "left join fetch w.wellSamples as ws " +
+            "left join fetch ws.plateAcquisition as pa " +
+            "left join fetch ws.image as img " +
+            "left join fetch img.pixels as pix " +
+            "left join fetch pix.pixelsType as pt " +
+            "where w.plate = :id";
 
     /**
      * Creates a new instance
@@ -93,6 +105,39 @@ public class LoadFacility extends Facility {
      */
     LoadFacility(Gateway gateway) {
         super(gateway);
+    }
+
+    /**
+     * Queries the DB for certain objects
+     * @param ctx The SecurityContext
+     * @param query The hql query
+     * @param type The class of the objects expected
+     * @param ids The ids of the objects to insert into the query
+     * @return A Collection of objects
+     * @param <T>
+     * @throws DSOutOfServiceException
+     * @throws DSAccessException
+     */
+    private <T extends DataObject> Collection<T> queryDb(SecurityContext ctx, String query, Class<T> type,
+                                                        Collection<Long> ids) throws DSOutOfServiceException, DSAccessException {
+        try {
+            IQueryPrx qs = gateway.getQueryService(ctx);
+            ParametersI param = new ParametersI();
+            param.addIds(ids);
+            List<IObject> tmp = qs.findAllByQuery(query, param);
+            List<T> result = new ArrayList<T>();
+            if (tmp != null && !tmp.isEmpty()) {
+                for (IObject o : tmp) {
+                    T inst = type.getDeclaredConstructor(o.getClass().getSuperclass()).newInstance(o);
+                    result.add(inst);
+                }
+            }
+            return result;
+        } catch (DSOutOfServiceException | ServerError | InstantiationException | IllegalAccessException |
+                 InvocationTargetException | NoSuchMethodException e) {
+            handleException(this, e, "Could not get objects");
+        }
+        return null;
     }
 
     /**
@@ -121,18 +166,21 @@ public class LoadFacility extends Facility {
      */
     public Collection<DatasetData> getDatasets(SecurityContext ctx, Collection<Long> ids) throws DSOutOfServiceException,
             DSAccessException {
-        try {
-            IQueryPrx qs = gateway.getQueryService(ctx);
-            ParametersI param = new ParametersI();
-            param.addIds(ids);
-            List<IObject> tmp = qs.findAllByQuery(GET_DATASET_QUERY, param);
-            if (tmp != null)
-                return tmp.stream().map(e -> new DatasetData((DatasetI) e)).collect(Collectors.toSet());
-            return Collections.emptySet();
-        } catch (DSOutOfServiceException | ServerError e) {
-            handleException(this, e, "Could not get datasets");
-        }
-        return null;
+        return queryDb(ctx, GET_DATASETS_QUERY, DatasetData.class, ids);
+    }
+
+    /**
+     * Get datasets of a project
+     * @param ctx The SecurityContext
+     * @param projectId The project Id
+     * @return Collection of datasets (can be empty)
+     * @throws DSOutOfServiceException
+     * @throws DSAccessException
+     */
+    public Collection<DatasetData> getDatasets(SecurityContext ctx, long projectId) throws DSOutOfServiceException,
+            DSAccessException {
+        return queryDb(ctx, GET_DATASETS_FOR_PROJECT_QUERY, DatasetData.class,
+                Collections.singletonList(projectId));
     }
 
     /**
@@ -161,18 +209,7 @@ public class LoadFacility extends Facility {
      */
     public Collection<ProjectData> getProjects(SecurityContext ctx, Collection<Long> ids) throws DSOutOfServiceException,
             DSAccessException {
-        try {
-            IQueryPrx qs = gateway.getQueryService(ctx);
-            ParametersI param = new ParametersI();
-            param.addIds(ids);
-            List<IObject> tmp = qs.findAllByQuery(GET_PROJECT_QUERY, param);
-            if (tmp != null)
-                return tmp.stream().map(e -> new ProjectData((ProjectI) e)).collect(Collectors.toSet());
-            return Collections.emptySet();
-        } catch (DSOutOfServiceException | ServerError e) {
-            handleException(this, e, "Could not get projects");
-        }
-        return null;
+        return queryDb(ctx, GET_PROJECTS_QUERY, ProjectData.class, ids);
     }
 
     /**
@@ -201,18 +238,21 @@ public class LoadFacility extends Facility {
      */
     public Collection<ImageData> getImages(SecurityContext ctx, Collection<Long> ids) throws DSOutOfServiceException,
             DSAccessException {
-        try {
-            IQueryPrx qs = gateway.getQueryService(ctx);
-            ParametersI param = new ParametersI();
-            param.addIds(ids);
-            List<IObject> tmp = qs.findAllByQuery(GET_IMAGE_QUERY, param);
-            if (tmp != null)
-                return tmp.stream().map(e -> new ImageData((ImageI) e)).collect(Collectors.toSet());
-            return Collections.emptySet();
-        } catch (DSOutOfServiceException | ServerError e) {
-            handleException(this, e, "Could not get images");
-        }
-        return null;
+        return queryDb(ctx, GET_IMAGES_QUERY, ImageData.class, ids);
+    }
+
+    /**
+     * Get images of a dataset
+     * @param ctx The SecurityContext
+     * @param datasetId The dataset Id
+     * @return Collection of images (can be empty)
+     * @throws DSOutOfServiceException
+     * @throws DSAccessException
+     */
+    public Collection<ImageData> getImages(SecurityContext ctx, long datasetId) throws DSOutOfServiceException,
+            DSAccessException {
+        return queryDb(ctx, GET_IMAGES_FOR_DATASET_QUERY, ImageData.class,
+                Collections.singletonList(datasetId));
     }
 
     /**
@@ -241,18 +281,7 @@ public class LoadFacility extends Facility {
      */
     public Collection<ScreenData> getScreens(SecurityContext ctx, Collection<Long> ids) throws DSOutOfServiceException,
             DSAccessException {
-        try {
-            IQueryPrx qs = gateway.getQueryService(ctx);
-            ParametersI param = new ParametersI();
-            param.addIds(ids);
-            List<IObject> tmp = qs.findAllByQuery(GET_SCREEN_QUERY, param);
-            if (tmp != null)
-                return tmp.stream().map(e -> new ScreenData((ScreenI) e)).collect(Collectors.toSet());
-            return Collections.emptySet();
-        } catch (DSOutOfServiceException | ServerError e) {
-            handleException(this, e, "Could not get screens");
-        }
-        return null;
+        return queryDb(ctx, GET_SCREENS_QUERY, ScreenData.class, ids);
     }
 
     /**
@@ -281,18 +310,21 @@ public class LoadFacility extends Facility {
      */
     public Collection<PlateData> getPlates(SecurityContext ctx, Collection<Long> ids) throws DSOutOfServiceException,
             DSAccessException {
-        try {
-            IQueryPrx qs = gateway.getQueryService(ctx);
-            ParametersI param = new ParametersI();
-            param.addIds(ids);
-            List<IObject> tmp = qs.findAllByQuery(GET_PLATE_QUERY, param);
-            if (tmp != null)
-                return tmp.stream().map(e -> new PlateData((PlateI) e)).collect(Collectors.toSet());
-            return Collections.emptySet();
-        } catch (DSOutOfServiceException | ServerError e) {
-            handleException(this, e, "Could not get screens");
-        }
-        return null;
+        return queryDb(ctx, GET_PLATES_QUERY, PlateData.class, ids);
+    }
+
+    /**
+     * Get plates for a screen
+     * @param ctx The SecurityContext
+     * @param screenId The screen Id
+     * @return Collection of plates (can be empty)
+     * @throws DSOutOfServiceException
+     * @throws DSAccessException
+     */
+    public Collection<PlateData> getPlates(SecurityContext ctx, long screenId) throws DSOutOfServiceException,
+            DSAccessException {
+        return queryDb(ctx, GET_PLATES_FOR_SCREEN_QUERY, PlateData.class,
+                Collections.singletonList(screenId));
     }
 
     /**
@@ -323,17 +355,21 @@ public class LoadFacility extends Facility {
      */
     public Collection<WellData> getWells(SecurityContext ctx, Collection<Long> ids) throws DSOutOfServiceException,
             DSAccessException {
-        try {
-            IQueryPrx qs = gateway.getQueryService(ctx);
-            ParametersI param = new ParametersI();
-            param.addIds(ids);
-            List<IObject> tmp = qs.findAllByQuery(GET_WELL_QUERY, param);
-            if (tmp != null)
-                return tmp.stream().map(e -> new WellData((WellI) e)).collect(Collectors.toSet());
-            return Collections.emptySet();
-        } catch (DSOutOfServiceException | ServerError e) {
-            handleException(this, e, "Could not get wells");
-        }
-        return null;
+        return queryDb(ctx, GET_WELLS_QUERY, WellData.class, ids);
+    }
+
+    /**
+     * Get wells of a plate (Note: These are slightly deeper objects,
+     * with wellsamples and images loaded)
+     * @param ctx The SecurityContext
+     * @param plateId The plate Id
+     * @return Collection of wells (can be empty)
+     * @throws DSOutOfServiceException
+     * @throws DSAccessException
+     */
+    public Collection<WellData> getWells(SecurityContext ctx, long plateId) throws DSOutOfServiceException,
+            DSAccessException {
+        return queryDb(ctx, GET_WELLS_FOR_PLATE_QUERY, WellData.class,
+                Collections.singletonList(plateId));
     }
 }
