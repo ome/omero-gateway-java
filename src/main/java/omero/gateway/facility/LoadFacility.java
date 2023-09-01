@@ -54,12 +54,12 @@ public class LoadFacility extends Facility {
             "where ds.id in (:ids)";
 
     private static String GET_DATASETS_FOR_PROJECT_QUERY = "select l.child from ProjectDatasetLink l " +
-            "where l.parent.id = :id";
+            "where l.parent.id in (:ids)";
 
     private static String GET_PROJECTS_QUERY = "select p from Project as p " +
             "left join fetch p.datasetLinks as l " +
             "left join fetch l.child as i " +
-            "where p.id =in (:ids)";
+            "where p.id in (:ids)";
 
     private static String GET_IMAGES_QUERY = "select i from Image as i " +
             "left join fetch i.pixels as p " +
@@ -67,7 +67,7 @@ public class LoadFacility extends Facility {
             "where i.id in (:ids)";
 
     private static String GET_IMAGES_FOR_DATASET_QUERY = "select l.child from DatasetImageLink l " +
-            "where l.parent.id = :id";
+            "where l.parent.id in (:ids)";
 
     private static String GET_PLATES_QUERY = "select p from Plate as p " +
             "left join fetch p.wells as w " +
@@ -75,7 +75,7 @@ public class LoadFacility extends Facility {
             "where p.id in (:ids)";
 
     private static String GET_PLATES_FOR_SCREEN_QUERY = "select l.child from ScreenPlateLink l " +
-            "where l.parent.id = :id";
+            "where l.parent.id in (:ids)";
 
     private static String GET_SCREENS_QUERY = "select s from Screen as s " +
             "left join fetch s.plateLinks as l " +
@@ -84,6 +84,7 @@ public class LoadFacility extends Facility {
 
     private static String GET_WELLS_QUERY = "select w from Well as w " +
             "left join fetch w.wellSamples as ws " +
+            "left join fetch w.plate as p " +
             "left join fetch ws.plateAcquisition as pa " +
             "left join fetch ws.image as img " +
             "left join fetch img.pixels as pix " +
@@ -92,11 +93,12 @@ public class LoadFacility extends Facility {
 
     private static String GET_WELLS_FOR_PLATE_QUERY = "select w from Well as w " +
             "left join fetch w.wellSamples as ws " +
+            "left join fetch w.plate as p " +
             "left join fetch ws.plateAcquisition as pa " +
             "left join fetch ws.image as img " +
             "left join fetch img.pixels as pix " +
             "left join fetch pix.pixelsType as pt " +
-            "where w.plate = :id";
+            "where p.id in (:ids)";
 
     /**
      * Creates a new instance
