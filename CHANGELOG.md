@@ -1,3 +1,9 @@
+5.8.2 (September 2023)
+----------------------
+
+- Bump omero-blitz version to 5.7.1
+-  Add top-level Git mailmap
+
 5.8.1 (July 2023)
 -----------------
 
