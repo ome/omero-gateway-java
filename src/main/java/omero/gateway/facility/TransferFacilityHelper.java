@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 University of Dundee & Open Microscopy Environment.
+ * Copyright (C) 2015-2023 University of Dundee & Open Microscopy Environment.
  * All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -62,10 +62,6 @@ public class TransferFacilityHelper {
      *
      * @param gateway
      *            Reference to the gateway.
-     * @param datamanager
-     *            Reference to the manager facility.
-     * @param parent
-     *            Reference to the parent.
      * @throws ExecutionException
      */
     TransferFacilityHelper(Gateway gateway) throws ExecutionException {
@@ -134,12 +130,12 @@ public class TransferFacilityHelper {
         if (image.isFSImage()) {
             for (Object tmp : filesets) {
                 Fileset fs = (Fileset) tmp;
-
+                String fs_dir = "Fileset_"+fs.getId().getValue();
                 String repoPath = fs.getTemplatePrefix().getValue();
                 for (FilesetEntry fse: fs.copyUsedFiles()) {
                     OriginalFile of = fse.getOriginalFile();
                     String ofDir = of.getPath().getValue().replace(repoPath, "");
-                    File outDir = new File(targetPath+File.separator+ofDir);
+                    File outDir = new File(targetPath+File.separator+ofDir+File.separator+fs_dir);
                     outDir.mkdirs();
                     File saved = saveOriginalFile(context, of, outDir);
                     if (saved != null)
