@@ -1,6 +1,6 @@
 /*
  *------------------------------------------------------------------------------
- *  Copyright (C) 2006-2017 University of Dundee. All rights reserved.
+ *  Copyright (C) 2006-2023 University of Dundee. All rights reserved.
  *
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -268,10 +268,7 @@ public class ExperimenterData extends DataObject {
      */
     public String getMiddleName() {
         omero.RString n = asExperimenter().getMiddleName();
-        if (n == null || n.getValue() == null) {
-            throw new IllegalStateException(
-                    "The name should never have been null");
-        }
+        if (n == null || n.getValue() == null) return "";
         return n.getValue();
     }
 
