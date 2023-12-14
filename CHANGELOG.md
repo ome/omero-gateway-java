@@ -1,13 +1,22 @@
+5.9.0 (December 2023)
+---------------------
+
+- Simply return empty string if middlename is null ([#84](https://github.com/ome/omero-gateway-java/pull/84))
+- Add method to load multiple objects at once ([#82](https://github.com/ome/omero-gateway-java/pull/82))
+- Download into Fileset_xyz directory ([#85](https://github.com/ome/omero-gateway-java/pull/85))
+- Add method to load original metadata ([#72](https://github.com/ome/omero-gateway-java/pull/72))
+- Bump omero-blitz version to 5.7.2
+
 5.8.2 (September 2023)
 ----------------------
 
 - Bump omero-blitz version to 5.7.1
--  Add top-level Git mailmap
+- Add top-level Git mailmap
 
 5.8.1 (July 2023)
 -----------------
 
-- Fix bug on download images based on omero-insight#264([#78](https://github.com/ome/omero-gateway-java/pull/78)) Thanks to Rémy Dornier
+- Fix bug on download images based on omero-insight#264 ([#78](https://github.com/ome/omero-gateway-java/pull/78)) Thanks to Rémy Dornier
 - BugFix: Set StringColumn to the correct size ([#76](https://github.com/ome/omero-gateway-java/pull/76))
 - Bump omero-blitz version to 5.6.3
 
