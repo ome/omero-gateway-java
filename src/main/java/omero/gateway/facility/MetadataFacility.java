@@ -1,6 +1,6 @@
 /*
  *------------------------------------------------------------------------------
- *  Copyright (C) 2015-2016 University of Dundee. All rights reserved.
+ *  Copyright (C) 2015-2023 University of Dundee. All rights reserved.
  *
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -20,6 +20,7 @@
  */
 package omero.gateway.facility;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,12 +32,15 @@ import java.util.Arrays;
 
 import omero.ServerError;
 import omero.api.IQueryPrx;
+import omero.cmd.CmdCallbackI;
+import omero.cmd.OriginalMetadataRequest;
+import omero.cmd.OriginalMetadataResponse;
 import omero.gateway.model.FilesetData;
 import omero.gateway.model.PixelsData;
 import omero.gateway.model.PlaneInfoData;
+import omero.gateway.util.OriginalMetadataParser;
 import omero.model.FilesetI;
 import omero.model.PlaneInfo;
-import omero.sys.Parameters;
 import org.apache.commons.collections.CollectionUtils;
 
 import omero.api.IMetadataPrx;
@@ -359,6 +363,64 @@ public class MetadataFacility extends Facility {
         if (fs != null)
             return new FilesetData(fs);
         return null;
+    }
+
+    /**
+     * Submits an OriginalMetadataRequest and waits for response
+     * @param ctx The SecurityContext
+     * @param imageId The image ID
+     * @return The OriginalMetadataResponse or null if something went wrong
+     */
+    private OriginalMetadataResponse requestOriginalMetadata(SecurityContext ctx, long imageId) {
+        OriginalMetadataRequest cmd = new OriginalMetadataRequest();
+        cmd.imageId = imageId;
+        try {
+            CmdCallbackI cb = gateway.submit(ctx, cmd);
+            if (cb.block(10000)) {
+                return (OriginalMetadataResponse) cb.getResponse();
+            }
+            else {
+                logError(this, "Could not request original metadata", null);
+            }
+        } catch (Throwable t) {
+            logError(this, "Could not request original metadata", t);
+        }
+        return null;
+    }
+
+    /**
+     * Get the original metadata of an image and write it into a file
+     * @param ctx The SecurityContext
+     * @param imageId The image id
+     * @param output The output file
+     * @throws Throwable
+     */
+    public void getOriginalMetadata(SecurityContext ctx, long imageId, File output) throws Exception {
+        if (output == null)
+            return;
+        OriginalMetadataResponse response = requestOriginalMetadata(ctx, imageId);
+        if (response != null)
+            (new OriginalMetadataParser(output)).read(response);
+    }
+
+    /**
+     * Get the original metadata of an image and write it a StringBuilder
+     * @param ctx The SecurityContext
+     * @param imageId The image id
+     * @param buffer The buffer
+     * @throws Throwable
+     */
+    public void getOriginalMetadata(SecurityContext ctx, long imageId, StringBuffer buffer) {
+        if (buffer == null)
+            return;
+        OriginalMetadataResponse response = requestOriginalMetadata(ctx, imageId);
+        if (response != null) {
+            try {
+                (new OriginalMetadataParser(buffer)).read(response);
+            } catch (Exception e) {
+                // ignore; calling the method with a StringBuilder can't throw an exception
+            }
+        }
     }
 
 }
