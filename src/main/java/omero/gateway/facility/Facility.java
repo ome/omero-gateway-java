@@ -115,8 +115,14 @@ public abstract class Facility {
                         + type.getSimpleName(), e);
             }
         }
-        
-        return (T) cache.get(type.getSimpleName(), new Callable<Facility>() {
+        String serverHost;
+        try{
+            serverHost = gateway.getServerHost();
+        }catch (DSOutOfServiceException e){
+            throw new ExecutionException("Not log-in ; Can't instantiate "
+                    + type.getSimpleName(), e);
+        }
+        return (T) cache.get(type.getSimpleName() + ":" +serverHost, new Callable<Facility>() {
 
             @Override
             public Facility call() throws Exception {

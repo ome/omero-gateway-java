@@ -187,6 +187,8 @@ public class Gateway implements AutoCloseable {
     /** Flag to indicate that executor threads should be shutdown on disconnect */
     private boolean executorShutdownOnDisconnect = false;
 
+    private String serverHost;
+
     /**
      * Creates a new Gateway instance
      * @param log A {@link Logger}
@@ -406,6 +408,20 @@ public class Gateway implements AutoCloseable {
             throw new DSOutOfServiceException("Not logged in.");
         }
         return serverVersion;
+    }
+
+    /**
+     * Get the hostname of the server the Gateway is connected to
+     *
+     * @return See above
+     * @throws DSOutOfServiceException
+     *             If the connection is broken, or not logged in
+     */
+    public String getServerHost() throws DSOutOfServiceException{
+        if (serverHost == null) {
+            throw new DSOutOfServiceException("Not logged in.");
+        }
+        return serverHost;
     }
 
     /**
@@ -1221,6 +1237,7 @@ public class Gateway implements AutoCloseable {
             }
             // Connector now controls the secureClient for closing.
             String host = session.client.getProperty("omero.host");
+            this.serverHost = host;
             cred.getServer().setHostname(host);
             String port = session.client.getProperty("omero.port");
             cred.getServer().setPort(Integer.parseInt(port));
