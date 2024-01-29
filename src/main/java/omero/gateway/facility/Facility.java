@@ -119,7 +119,7 @@ public abstract class Facility {
         try{
             serverHost = gateway.getServerHost();
         }catch (DSOutOfServiceException e){
-            throw new ExecutionException("Not log-in ; Can't instantiate "
+            throw new ExecutionException("Not logged in; Can't instantiate "
                     + type.getSimpleName(), e);
         }
         return (T) cache.get(type.getSimpleName() + ":" +serverHost, new Callable<Facility>() {
