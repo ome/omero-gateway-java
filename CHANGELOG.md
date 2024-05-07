@@ -1,3 +1,9 @@
+5.9.1 (May 2024)
+----------------
+
+- Fix bug when connecting to multiple servers ([#86](https://github.com/ome/omero-gateway-java/pull/86))
+- Bump omero-blitz version to 5.7.3
+
 5.9.0 (December 2023)
 ---------------------
 
