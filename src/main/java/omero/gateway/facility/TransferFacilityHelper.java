@@ -135,7 +135,7 @@ public class TransferFacilityHelper {
                 for (FilesetEntry fse: fs.copyUsedFiles()) {
                     OriginalFile of = fse.getOriginalFile();
                     String ofDir = of.getPath().getValue().replace(repoPath, "");
-                    File outDir = new File(targetPath+File.separator+ofDir+File.separator+fs_dir);
+                    File outDir = new File(targetPath+File.separator+fs_dir+File.separator+ofDir);
                     outDir.mkdirs();
                     File saved = saveOriginalFile(context, of, outDir);
                     if (saved != null)
