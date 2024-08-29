@@ -2,7 +2,6 @@
 -------------------
 
 - Fix order of the directory separators when downloading an image (https://github.com/ome/omero-gateway-java/pull/90)
-- Bump org.openmicroscopy.project 5.6.0 (https://github.com/ome/omero-gateway-java/pull/69)
 
 5.9.2 (July 2024)
 -----------------
