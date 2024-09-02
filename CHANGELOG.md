@@ -1,3 +1,8 @@
+5.9.3 (September 2024)
+-------------------
+
+- Fix order of the directory separators when downloading an image (https://github.com/ome/omero-gateway-java/pull/90)
+
 5.9.2 (July 2024)
 -----------------
 
