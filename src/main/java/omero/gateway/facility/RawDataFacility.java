@@ -280,6 +280,24 @@ public class RawDataFacility extends Facility implements AutoCloseable {
     }
 
     /**
+     * Checks if the image is considered RGB by the Bioformats Reader
+     * @param ctx The SecurityContext
+     * @param pixels The PixelsData object
+     * @return See above
+     * @throws DataSourceException If an error occurs while retrieving the data
+     */
+    public boolean isRGB(SecurityContext ctx, PixelsData pixels) throws DataSourceException {
+        if (pixels == null)
+            return false;
+
+        try {
+            return getDataSink(ctx, pixels, gateway).isRGB();
+        } catch (DSOutOfServiceException e) {
+            throw new DataSourceException("Can't initiate DataSink", e);
+        }
+    }
+
+    /**
      * Retrieves a data sink corresponding the pixels.
      *
      * @param ctx
