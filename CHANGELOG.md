@@ -1,7 +1,13 @@
+5.10.0 (November 2024)
+----------------------
+
+- Build with Java 11 ([#95](https://github.com/ome/omero-gateway-java/pull/95))
+- Bump omero-blitz version to 5.8.0
+
 5.9.3 (September 2024)
 ----------------------
 
-- Fix order of the directory separators when downloading an image (https://github.com/ome/omero-gateway-java/pull/90)
+- Fix order of the directory separators when downloading an image ([#90](https://github.com/ome/omero-gateway-java/pull/90))
 
 5.9.2 (July 2024)
 -----------------
