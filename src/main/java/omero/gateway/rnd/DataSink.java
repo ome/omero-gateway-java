@@ -203,6 +203,20 @@ public class DataSink implements AutoCloseable
     }
 
     /**
+     * Checks if the image is considered RGB by the Bioformats Reader.
+     * @return See above.
+     * @throws DataSourceException
+     *             If an error occurs.
+     */
+    public boolean isRGB() throws DataSourceException {
+        try {
+            return store.isRGB();
+        } catch (Exception e) {
+            throw new DataSourceException("Cannot access RawPixelStore", e);
+        }
+    }
+
+    /**
      * Extracts a 2D plane from the pixels set this object is working for.
      *
      * @param z The z-section at which data is to be fetched.
