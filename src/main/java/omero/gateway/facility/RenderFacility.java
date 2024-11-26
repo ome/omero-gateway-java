@@ -20,6 +20,7 @@
  */
 package omero.gateway.facility;
 
+import omero.ServerError;
 import omero.api.RenderingEnginePrx;
 import omero.gateway.Gateway;
 import omero.gateway.SecurityContext;
@@ -52,11 +53,32 @@ public class RenderFacility extends Facility {
      * @throws DSAccessException       If an error occurred while trying to retrieve data from OMERO
      *                                 service.
      */
-    public RenderingEnginePrx getRenderingEngine(SecurityContext ctx, long imageId, boolean initDefaultSettings)
+    public RenderingEnginePrx getRenderingEngine(SecurityContext ctx, long imageId,
+                                                 boolean initDefaultSettings)
+            throws DSOutOfServiceException, DSAccessException, ServerError {
+        return getRenderingEngine(ctx, imageId, initDefaultSettings, true);
+    }
+
+    /**
+     * Get a RenderingEngine for an image.
+     *
+     * @param ctx                 The security context.
+     * @param imageId             The image ID
+     * @param initDefaultSettings Flag to create default rendering settings if the
+     *                            image doesn't have any for the current user.
+     * @param closeRE               Close the rendering engine again
+     * @return A RenderingEngine for the image
+     * @throws DSOutOfServiceException If the connection is broken, or not logged in
+     * @throws DSAccessException       If an error occurred while trying to retrieve data from OMERO
+     *                                 service.
+     */
+    public RenderingEnginePrx getRenderingEngine(SecurityContext ctx, long imageId,
+                                                 boolean initDefaultSettings, boolean closeRE)
             throws DSOutOfServiceException, DSAccessException {
+        RenderingEnginePrx re = null;
         try {
             long pixelsId = gateway.getFacility(LoadFacility.class).getImage(ctx, imageId).getDefaultPixels().getId();
-            RenderingEnginePrx re = gateway.getRenderingService(ctx, pixelsId);
+            re = gateway.getRenderingService(ctx, pixelsId);
             if (!re.lookupRenderingDef(pixelsId)) {
                 if (initDefaultSettings) {
                     re.resetDefaultSettings(true);
@@ -69,6 +91,14 @@ public class RenderFacility extends Facility {
             return re;
         } catch (Throwable t) {
             handleException(this, t, "Could not load RenderingEngine.");
+        } finally {
+            if (closeRE && re != null) {
+                try {
+                    re.close();
+                } catch (ServerError e) {
+                    // just ignore
+                }
+            }
         }
         return null;
     }
@@ -112,8 +142,8 @@ public class RenderFacility extends Facility {
      * Renders the selected z, t plane of the given image as RGB image.
      * @param ctx                 The security context.
      * @param imageId             The image ID
-     * @param z The z plane
-     * @param t The time point
+     * @param z                   The z plane
+     * @param t                   The time point
      * @return An RGB image ready to be displayed on screen.
      * @throws DSOutOfServiceException If the connection is broken, or not logged in
      * @throws DSAccessException       If an error occurred while trying to retrieve data from OMERO
@@ -121,13 +151,39 @@ public class RenderFacility extends Facility {
      */
     public int[] renderPlane(SecurityContext ctx, long imageId, int z, int t)
             throws DSOutOfServiceException, DSAccessException {
+        return renderPlane(ctx, imageId, z, t, true);
+    }
+
+    /**
+     * Renders the selected z, t plane of the given image as RGB image.
+     * @param ctx                 The security context.
+     * @param imageId             The image ID
+     * @param z                   The z plane
+     * @param t                   The time point
+     * @param closeRE             Close the rendering engine again
+     * @return An RGB image ready to be displayed on screen.
+     * @throws DSOutOfServiceException If the connection is broken, or not logged in
+     * @throws DSAccessException       If an error occurred while trying to retrieve data from OMERO
+     *                                 service.
+     */
+    public int[] renderPlane(SecurityContext ctx, long imageId, int z, int t, boolean closeRE)
+            throws DSOutOfServiceException, DSAccessException {
+        RenderingEnginePrx re = null;
         try {
-            RenderingEnginePrx re = getRenderingEngine(ctx, imageId, true);
+            re = getRenderingEngine(ctx, imageId, true, closeRE);
             PlaneDef plane = new PlaneDef(omeis.providers.re.data.PlaneDef.XY, 0,
                     0, z, t, null, -1);
             return re.renderAsPackedInt(plane);
         } catch (Throwable e) {
             handleException(this, e, "Could not render plane.");
+        } finally {
+            if (closeRE && re != null) {
+                try {
+                    re.close();
+                } catch (ServerError e) {
+                    // just ignore
+                }
+            }
         }
         return null;
     }
@@ -136,8 +192,8 @@ public class RenderFacility extends Facility {
      * Renders the selected z, t plane of the given image as BufferedImage.
      * @param ctx                 The security context.
      * @param imageId             The image ID
-     * @param z The z plane
-     * @param t The time point
+     * @param z                   The z plane
+     * @param t                   The time point
      * @return A BufferedImage ready to be displayed on screen.
      * @throws DSOutOfServiceException If the connection is broken, or not logged in
      * @throws DSAccessException       If an error occurred while trying to retrieve data from OMERO
@@ -145,9 +201,27 @@ public class RenderFacility extends Facility {
      */
     public BufferedImage renderPlaneAsBufferedImage(SecurityContext ctx, long imageId, int z, int t)
             throws DSOutOfServiceException, DSAccessException {
+        return renderPlaneAsBufferedImage(ctx, imageId, z, t, true);
+    }
+
+    /**
+     * Renders the selected z, t plane of the given image as BufferedImage.
+     * @param ctx                 The security context.
+     * @param imageId             The image ID
+     * @param z                   The z plane
+     * @param t                   The time point
+     * @param closeRE             Close the rendering engine again
+     * @return A BufferedImage ready to be displayed on screen.
+     * @throws DSOutOfServiceException If the connection is broken, or not logged in
+     * @throws DSAccessException       If an error occurred while trying to retrieve data from OMERO
+     *                                 service.
+     */
+    public BufferedImage renderPlaneAsBufferedImage(SecurityContext ctx, long imageId, int z, int t,
+                                                    boolean closeRE)
+            throws DSOutOfServiceException, DSAccessException {
         try {
             ImageData img = gateway.getFacility(LoadFacility.class).getImage(ctx, imageId);
-            int[] pixels = renderPlane(ctx, imageId, 0, 0);
+            int[] pixels = renderPlane(ctx, imageId, 0, 0, closeRE);
             int w = img.getDefaultPixels().getSizeX();
             int h = img.getDefaultPixels().getSizeY();
             BufferedImage image = new BufferedImage(w, h,
