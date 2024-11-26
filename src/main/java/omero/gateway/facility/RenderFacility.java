@@ -74,7 +74,8 @@ public class RenderFacility extends Facility {
     }
 
     /**
-     * Checks if an image is an RGB(A) image.
+     * Tries to determine if an image is an RGB(A) image.
+     * (Note: This does not necessarily give the same results as Bioformats isRGB()!)
      *
      * @param ctx                 The security context.
      * @param imageId             The image ID
@@ -86,12 +87,12 @@ public class RenderFacility extends Facility {
     public boolean isRGB(SecurityContext ctx, long imageId) throws DSOutOfServiceException, DSAccessException {
         try {
             ImageData img = gateway.getFacility(LoadFacility.class).getImage(ctx, imageId);
-            int nChannles = img.getDefaultPixels().getSizeC();
-            if (nChannles < 3 || nChannles > 4)
+            int nChannels = img.getDefaultPixels().getSizeC();
+            if (nChannels < 3 || nChannels > 4)
                 return false;
             boolean r = false, g = false, b = false;
             RenderingEnginePrx re = getRenderingEngine(ctx, imageId, true);
-            for (int i=0; i<nChannles; i++) {
+            for (int i=0; i<nChannels; i++) {
                 int[] ch = re.getRGBA(i);
                 if (!r && ch[0] == 255 && ch[1] == 0 && ch[2] == 0)
                     r = true;
