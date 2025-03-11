@@ -13,7 +13,7 @@ repositories {
 }
 
 dependencies {
-    api("org.openmicroscopy:omero-blitz:5.8.0")
+    api("org.openmicroscopy:omero-blitz:5.8.1")
 
     implementation("commons-beanutils:commons-beanutils:1.9.3")
     implementation("com.zeroc:icegrid:3.6.5")
