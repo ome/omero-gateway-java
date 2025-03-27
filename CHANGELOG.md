@@ -1,3 +1,9 @@
+5.10.2 (March 2025)
+-------------------
+
+- Bump omero-blitz to 5.8.2
+- Bump org.openmicroscopy.project to 5.7.2 ((#100)[https://github.com/ome/omero-gateway-java/pull/100])
+
 5.10.1 (March 2025)
 -------------------
 
