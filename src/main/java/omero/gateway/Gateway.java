@@ -1173,15 +1173,18 @@ public class Gateway implements AutoCloseable {
     private ExperimenterData login(SessionWrapper session, LoginCredentials cred)
             throws DSOutOfServiceException {
         this.login = cred;
+        this.serverHost = session.client.getProperty("omero.host");
+
         Connector connector = null;
         SecurityContext ctx = null;
+
         try {
             ServiceFactoryPrx entryEncrypted = session.client.getSession();
             
             // version check
             String clientVersion = Gateway.class.getPackage().getImplementationVersion();
             IConfigPrx conf = entryEncrypted.getConfigService();
-            String serverVersion = conf.getVersion();
+            this.serverVersion = conf.getVersion();
             if (StringUtils.isNotEmpty(clientVersion)
                     && StringUtils.isNotEmpty(serverVersion)
                     && cred.getCheckVersion()) {
@@ -1236,9 +1239,7 @@ public class Gateway implements AutoCloseable {
                 }
             }
             // Connector now controls the secureClient for closing.
-            String host = session.client.getProperty("omero.host");
-            this.serverHost = host;
-            cred.getServer().setHostname(host);
+            cred.getServer().setHostname(this.serverHost);
             String port = session.client.getProperty("omero.port");
             cred.getServer().setPort(Integer.parseInt(port));
             ctx = new SecurityContext(exp.getDefaultGroup().getId());
