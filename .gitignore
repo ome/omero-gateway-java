@@ -10,10 +10,7 @@
 
 # generated files
 /build
-/gradle
 /src/generated/*
-gradlew
-*.bat
 *.log
 
 # Local configuration file (sdk path, etc)
