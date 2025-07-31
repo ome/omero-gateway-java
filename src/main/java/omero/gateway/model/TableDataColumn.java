@@ -21,7 +21,7 @@ package omero.gateway.model;
 import omero.IllegalArgumentException;
 
 import omero.model.OriginalFile;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Defines a column for a {@link TableData} object

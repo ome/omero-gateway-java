@@ -20,7 +20,7 @@
  */
 package omero.gateway.model;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import omero.RString;
 import omero.model.XmlAnnotation;
