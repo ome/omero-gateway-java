@@ -16,6 +16,7 @@ dependencies {
     api("org.openmicroscopy:omero-blitz:5.8.3")
 
     implementation("commons-beanutils:commons-beanutils:1.9.3")
+    implementation("org.apache.commons:commons-lang3:3.18.0")
     implementation("com.zeroc:icegrid:3.6.5")
     testImplementation("org.testng:testng:7.5")
 }
