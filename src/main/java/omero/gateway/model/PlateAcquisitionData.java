@@ -24,7 +24,7 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import omero.model.PlateAcquisition;
 import omero.model.PlateAcquisitionI;
