@@ -278,7 +278,7 @@ public abstract class DataObject {
         if (value instanceof IMutable) {
             IMutable m = (IMutable) value;
             setDirty(true);
-            m.setVersion(new Integer(version));
+            m.setVersion(Integer.valueOf(version));
         }
     }
 

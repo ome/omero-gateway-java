@@ -113,7 +113,7 @@ public abstract class ShapeData
             n = t.countTokens()/2;
             for (int j = 0; j < n; j++) {
                 points.add(
-                        new Point2D.Double(new Double(t.nextToken()), new Double(
+                        new Point2D.Double(Double.valueOf(t.nextToken()), Double.valueOf(
                                 t.nextToken())));
             }
         }

@@ -505,14 +505,14 @@ public class ImageData extends DataObject {
         while (m.moreDeletions()) {
             setDirty(true);
             asImage().unlinkAnnotation(m.nextDeletion().asAnnotation());
-            annotationCount = annotationCount == null ? null : new Long(
+            annotationCount = annotationCount == null ? null : Long.valueOf(
                     annotationCount.longValue() - 1);
         }
 
         while (m.moreAdditions()) {
             setDirty(true);
             asImage().linkAnnotation(m.nextAddition().asAnnotation());
-            annotationCount = annotationCount == null ? null : new Long(
+            annotationCount = annotationCount == null ? null : Long.valueOf(
                     annotationCount.longValue() + 1);
         }
 
