@@ -311,14 +311,14 @@ public class DatasetData extends DataObject {
         while (m.moreDeletions()) {
             setDirty(true);
             asDataset().unlinkAnnotation(m.nextDeletion().asAnnotation());
-            annotationCount = annotationCount == null ? null : new Long(
+            annotationCount = annotationCount == null ? null : Long.valueOf(
                     annotationCount.longValue() - 1);
         }
 
         while (m.moreAdditions()) {
             setDirty(true);
             asDataset().linkAnnotation(m.nextAddition().asAnnotation());
-            annotationCount = annotationCount == null ? null : new Long(
+            annotationCount = annotationCount == null ? null : Long.valueOf(
                     annotationCount.longValue() + 1);
         }
 

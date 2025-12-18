@@ -273,7 +273,7 @@ public class ShapeSettingsData
         String[] values = v.split("\\s*,\\s*");
         double[] dashes = new double[values.length];
         for (int i = 0; i < values.length; i++) 
-            dashes[i] = new Double(values[i]);
+            dashes[i] = Double.valueOf(values[i]);
         return dashes;
     }
 
