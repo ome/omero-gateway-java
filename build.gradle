@@ -24,6 +24,10 @@ repositories {
     }
 }
 
+compileJava {
+    options.release = 8
+}
+
 dependencies {
     api("org.openmicroscopy:omero-blitz:5.8.3")
 
