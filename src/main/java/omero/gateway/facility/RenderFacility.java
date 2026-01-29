@@ -122,7 +122,7 @@ public class RenderFacility extends Facility {
                 return false;
             boolean r = false, g = false, b = false;
             RenderingEnginePrx re = getRenderingEngine(ctx, imageId, true);
-            for (int i=0; i<nChannels; i++) {
+            for (int i=0; i< nChannels; i++) {
                 int[] ch = re.getRGBA(i);
                 if (!r && ch[0] == 255 && ch[1] == 0 && ch[2] == 0)
                     r = true;
