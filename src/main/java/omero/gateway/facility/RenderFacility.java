@@ -60,7 +60,7 @@ public class RenderFacility extends Facility {
     }
 
     /**
-     * Get a RenderingEngine for an image.
+     * Gets a RenderingEngine for an image.
      *
      * @param ctx                 The security context.
      * @param imageId             The image ID
