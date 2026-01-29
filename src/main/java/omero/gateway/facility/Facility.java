@@ -290,7 +290,7 @@ public abstract class Facility {
         logError(originator, message, t);
 
         if (t instanceof DSOutOfServiceException)
-            throw (DSOutOfServiceException)t;
+            throw (DSOutOfServiceException) t;
         if (t instanceof DSAccessException)
             throw (DSAccessException)t;
 
