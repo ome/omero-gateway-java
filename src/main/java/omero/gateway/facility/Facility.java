@@ -1,6 +1,6 @@
 /*
  *------------------------------------------------------------------------------
- *  Copyright (C) 2015-2024 University of Dundee. All rights reserved.
+ *  Copyright (C) 2015-2026 University of Dundee. All rights reserved.
  *
  *
  *  This program is free software; you can redistribute it and/or modify

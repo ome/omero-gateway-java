@@ -1,6 +1,6 @@
 /*
  *------------------------------------------------------------------------------
- *  Copyright (C) 2025 University of Dundee. All rights reserved.
+ *  Copyright (C) 2025-2026 University of Dundee. All rights reserved.
  *
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -65,9 +65,11 @@ public class RenderFacility extends Facility {
      * @param ctx                 The security context.
      * @param imageId             The image ID
      * @param initDefaultSettings Flag to create default rendering settings if the
-     *                            image doesn't have any for the current user.
+     *                            image doesn't have any for the current user (if set to false
+     *                            and the image doesn't have any rendering settings, null is 
+     *                            returned)
      * @param closeRE               Close the rendering engine again
-     * @return A RenderingEngine for the image
+     * @return A RenderingEngine for the image or null if RenderingEngine couldn't be initialised.
      * @throws DSOutOfServiceException If the connection is broken, or not logged in
      * @throws DSAccessException       If an error occurred while trying to retrieve data from OMERO
      *                                 service.
@@ -84,7 +86,7 @@ public class RenderFacility extends Facility {
                     re.resetDefaultSettings(true);
                     re.lookupRenderingDef(pixelsId);
                 } else {
-                    throw new DSOutOfServiceException("Image doesn't have rendering settings.");
+                    return null;
                 }
             }
             re.load();
@@ -105,7 +107,8 @@ public class RenderFacility extends Facility {
 
     /**
      * Tries to determine if an image is an RGB(A) image.
-     * (Note: This does not necessarily give the same results as Bioformats isRGB()!)
+     * (Note: This does not necessarily give the same results as Bioformats isRGB()!
+     * FormatReader.isRGB() only checks if the image has more than one channel)
      *
      * @param ctx                 The security context.
      * @param imageId             The image ID
@@ -122,7 +125,7 @@ public class RenderFacility extends Facility {
                 return false;
             boolean r = false, g = false, b = false;
             RenderingEnginePrx re = getRenderingEngine(ctx, imageId, true);
-            for (int i=0; i< nChannels; i++) {
+            for (int i = 0; i < nChannels; i++) {
                 int[] ch = re.getRGBA(i);
                 if (!r && ch[0] == 255 && ch[1] == 0 && ch[2] == 0)
                     r = true;
