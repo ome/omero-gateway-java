@@ -292,7 +292,7 @@ public abstract class Facility {
         if (t instanceof DSOutOfServiceException)
             throw (DSOutOfServiceException) t;
         if (t instanceof DSAccessException)
-            throw (DSAccessException)t;
+            throw (DSAccessException) t;
 
         ConnectionStatus b = getConnectionStatus(t);
         if (b != ConnectionStatus.OK)
