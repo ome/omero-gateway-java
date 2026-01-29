@@ -1,6 +1,6 @@
 /*
  *------------------------------------------------------------------------------
- *  Copyright (C) 2015-2017 University of Dundee. All rights reserved.
+ *  Copyright (C) 2015-2026 University of Dundee. All rights reserved.
  *
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -289,11 +289,17 @@ public abstract class Facility {
             throws DSOutOfServiceException, DSAccessException {
         logError(originator, message, t);
 
+        if (t instanceof DSOutOfServiceException)
+            throw (DSOutOfServiceException) t;
+        if (t instanceof DSAccessException)
+            throw (DSAccessException) t;
+
         ConnectionStatus b = getConnectionStatus(t);
         if (b != ConnectionStatus.OK)
             throw new DSOutOfServiceException("Connection lost.", t);
         if (!gateway.isConnected())
             throw new DSOutOfServiceException("Gateway is disconnected.", t);
+
         Throwable cause = t.getCause();
         if (cause instanceof SecurityViolation) {
             String s = "For security reasons, cannot access data. \n";

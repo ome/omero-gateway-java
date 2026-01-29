@@ -1,6 +1,6 @@
 /*
  *------------------------------------------------------------------------------
- *  Copyright (C) 2015-2022 University of Dundee. All rights reserved.
+ *  Copyright (C) 2015-2024 University of Dundee. All rights reserved.
  *
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -973,8 +973,11 @@ public class Gateway implements AutoCloseable {
             long pixelsID) throws DSOutOfServiceException,
             ServerError {
         Connector c = getConnector(ctx, true, false);
-        if (c != null)
-            return c.getRenderingService(pixelsID, ctx.getCompression());
+        if (c != null) {
+            RenderingEnginePrx re = c.getRenderingService(pixelsID, ctx.getCompression());
+            re.lookupPixels(pixelsID);
+            return re;
+        }
         return null;
     }
 
