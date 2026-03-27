@@ -1594,6 +1594,13 @@ public class Gateway implements AutoCloseable {
                     c = null;
                 }
             }
+            try {
+                // In case of sessionID login all connectors are attached
+                // to same session, so need to explicitely change group context.
+                c.refreshGroupContext();
+            } catch (ServerError e) {
+                throw new DSOutOfServiceException("Failed to refresh group context: " + e.getMessage());
+            }
         }
 
         // We are going to create a connector and activate a session.
