@@ -1594,6 +1594,13 @@ public class Gateway implements AutoCloseable {
                     c = null;
                 }
             }
+            try {
+                // In case of sessionID login all connectors are attached
+                // to same session, so need to explicitely change group context.
+                c.refreshGroupContext();
+            } catch (ServerError e) {
+                throw new DSOutOfServiceException("Failed to refresh group context: " + e.getMessage());
+            }
         }
 
         // We are going to create a connector and activate a session.
@@ -1717,6 +1724,11 @@ public class Gateway implements AutoCloseable {
                         .getUser().getPassword());
             }
             if (ctx.getGroupID() >= 0) {
+                // if this connector attaches to an existing session, have to make sure
+                // that all stateful services are closed before changing group (see issue #98)
+                for (StatefulServiceInterfacePrx service : client.getStatefulServices()) {
+                    service.close();
+                }
                 prx.setSecurityContext(new ExperimenterGroupI(ctx.getGroupID(), false));
             } else {
                 throw new IllegalArgumentException("must set security context with a valid group ID");

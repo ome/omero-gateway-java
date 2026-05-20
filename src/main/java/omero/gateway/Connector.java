@@ -98,6 +98,7 @@ import omero.grid.SharedResourcesPrxHelper;
 import omero.log.LogMessage;
 import omero.log.Logger;
 import omero.model.ExperimenterGroup;
+import omero.model.ExperimenterGroupI;
 import omero.model.Session;
 import omero.sys.Principal;
 
@@ -1011,6 +1012,21 @@ class Connector
     }
 
     /**
+     * Makes sure the ServiceFactory has the correct group context.
+     * This is necessary when sessionID login was used, because all connectors 
+     * are attached to the same session in that case.
+     * @throws ServerError if the group context cannot be refreshed
+     */
+    void refreshGroupContext() throws ServerError {
+        if (entryEncrypted != null) {
+            entryEncrypted.setSecurityContext(new ExperimenterGroupI(context.getGroupID(), false));
+        }
+        if (entryUnencrypted != null) {
+            entryUnencrypted.setSecurityContext(new ExperimenterGroupI(context.getGroupID(), false));
+        }
+    }
+
+    /**
      * Recycles the specified service.
      * 
      * @param name The name of the service to create or recycle.
@@ -1064,5 +1080,4 @@ class Connector
             throw new DSOutOfServiceException("Could not create " + name, e);
         }
     }
-
 }
