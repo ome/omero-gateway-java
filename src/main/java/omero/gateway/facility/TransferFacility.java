@@ -28,6 +28,9 @@ import omero.gateway.Gateway;
 import omero.gateway.SecurityContext;
 import omero.gateway.exception.DSAccessException;
 import omero.gateway.exception.DSOutOfServiceException;
+import omero.gateway.model.DataObject;
+
+import org.apache.commons.collections.CollectionUtils;
 
 /**
  * {@link Facility} which provides data transfer functionality, i.e. download
@@ -68,6 +71,28 @@ public class TransferFacility extends Facility {
         if (imageId < 0)
             return Collections.emptyList();
         return helper.downloadImage(context, targetPath, imageId);
+    }
+
+    /**
+     * Uploads the specified images to the server.
+     *
+     * @param ctx The security context.
+     * @param paths The files to import.
+     * @param target The container if any.
+     * @return See above
+     * @throws DSOutOfServiceException
+     *             If the connection is broken, or not logged in
+     * @throws DSAccessException
+     *             If an error occurred while trying to retrieve data from OMERO
+     *             service.
+     */
+    public Boolean uploadImagesDirect(final SecurityContext ctx, final List<String> paths,
+                                final DataObject target)
+            throws DSAccessException, DSOutOfServiceException{
+        if (CollectionUtils.isEmpty(paths)) {
+            return Boolean.FALSE;
+        }
+        return helper.uploadImagesDirect(ctx, paths, target);
     }
 
 }
